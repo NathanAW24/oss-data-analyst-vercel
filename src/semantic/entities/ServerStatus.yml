@@ -1,0 +1,70 @@
+name: ServerStatus
+type: fact_table
+table: opendcim.server_status
+grain: one row per server status snapshot
+description: Server operational status with cabinet placement, power consumption, and network throughput.
+common_questions:
+  - Which servers are currently Critical?
+  - What is the power draw by cabinet?
+  - Which servers have the highest network throughput?
+
+dimensions:
+  - name: cabinet_id
+    sql: cabinet_id
+    type: string
+    description: Cabinet identifier containing the server
+
+  - name: server_id
+    sql: server_id
+    type: string
+    description: Unique server identifier
+
+  - name: location_u
+    sql: location_u
+    type: number
+    description: Rack unit position of the server
+
+  - name: status
+    sql: status
+    type: string
+    description: Server status
+    sample_values: [Running, Critical]
+
+  - name: power_consumed
+    sql: power_consumed
+    type: number
+    description: Power consumed by the server (kW)
+
+  - name: network_throughput_mbps
+    sql: network_throughput_mbps
+    type: number
+    description: Network throughput in Mbps
+
+time_dimensions:
+  - name: update_datetime
+    sql: update_datetime
+    type: time
+    description: Timestamp of the status update
+
+measures:
+  - name: server_count
+    sql: server_id
+    type: count_distinct
+    description: Count of servers
+
+  - name: avg_power_consumed
+    sql: power_consumed
+    type: avg
+    description: Average server power consumption
+
+  - name: avg_network_throughput
+    sql: network_throughput_mbps
+    type: avg
+    description: Average network throughput
+
+joins:
+  - target_entity: CabinetStatus
+    relationship: many_to_one
+    join_columns:
+      from: cabinet_id
+      to: cabinet_id

@@ -1,48 +1,310 @@
 entities:
-  - name: Company
-    grain: one row per company record
+  - name: CabinetStatus
+    grain: one row per cabinet status snapshot
     description: >-
-      Company information including industry classification, size metrics, and location data for analyzing business demographics and organizational characteristics.
-    fields: ['id', 'name', 'industry', 'employee_count', 'revenue', 'founded_year', 'country', 'city', 'created_at']
+      Cabinet-level operational state including power usage, rack capacity, temperature, and critical event counts for each cabinet in a data center.
+    fields: ['data_center', 'cabinet_id', 'row', 'col', 'status', 'power_consumed', 'rack_capacity', 'average_temp', 'critical_events']
     example_questions:
-      - How many companies are in each industry?
-      - What is the average revenue by industry?
-      - Which companies have the most employees?
-      - Show me companies founded after 2010
-      - What is the geographic distribution of companies?
+      - Which cabinets are currently in Critical status by data center?
+      - What is the average temperature by row and column?
+      - How much rack capacity remains per cabinet?
+      - Which cabinets show the highest power consumption?
+      - How many critical events have been logged per site?
     use_cases: >-
-      Market segmentation and industry analysis
-      Company size and revenue distribution reporting
-      Geographic footprint visualization
+      Data center cabinet health monitoring
+      Capacity and thermal planning by cabinet and row
+      Identifying power hotspots and risk areas
 
-  - name: People
-    grain: one row per person record
+  - name: HierarchyNode
+    grain: one row per hierarchy node
     description: >-
-      Employee records with demographic information, job details, and compensation data for workforce analysis and human capital reporting.
-    fields: ['id', 'first_name', 'last_name', 'email', 'company_id', 'job_title', 'department', 'salary', 'hire_date', 'birth_date', 'created_at']
+      Site hierarchy tree describing containers, data centers, labs, and colocations with parent-child relationships.
+    fields: ['node_id', 'original_id', 'name', 'type', 'parent_id']
     example_questions:
-      - What is the average salary by department?
-      - How many employees work in each company?
-      - Who are the highest paid employees?
-      - What is the average tenure of employees?
-      - Show me the distribution of employees by job title
+      - What data centers roll up under AMD Data Centers?
+      - Show the parent chain for a given node.
+      - List all datacenter-type nodes.
     use_cases: >-
-      Workforce composition and headcount analysis
-      Compensation benchmarking and equity reviews
-      Department staffing and organizational structure
+      Navigating organizational and physical location hierarchy
+      Building tree visualizations of facilities
+      Mapping monitoring data to parent containers
 
-  - name: Accounts
-    grain: one row per customer account record
+  - name: Locations
+    grain: one row per data center location
     description: >-
-      Customer account records with contract details, revenue metrics, and relationship information for analyzing customer health and commercial performance.
-    fields: ['id', 'account_number', 'company_id', 'account_manager_id', 'status', 'account_type', 'monthly_value', 'total_revenue', 'contract_start_date', 'contract_end_date', 'created_at']
+      Geographic coordinates and region for each data center.
+    fields: ['region', 'data_center', 'latitude', 'longitude']
     example_questions:
-      - What is the total monthly recurring revenue?
-      - How many accounts are Active vs Inactive?
-      - Which account managers manage the most accounts?
-      - Show me the top 10 accounts by total revenue
-      - What is the average contract length?
+      - Where are data centers located by region?
+      - Plot the latitude and longitude of APAC sites.
+      - Which data centers fall within a given region?
     use_cases: >-
-      Revenue reporting and forecasting
-      Account health monitoring and churn analysis
-      Account manager performance and territory planning
+      Mapping data center footprints
+      Regional capacity and coverage analysis
+      Feeding geospatial dashboards
+
+  - name: MetricAlertState
+    grain: one row per device metric alert state
+    description: >-
+      Current severity and ServiceNow linkage for each device metric, including first/last seen times and last incident sent.
+    fields: ['msg_key', 'device_label', 'metric', 'current_severity', 'last_prom_value', 'last_threshold', 'first_seen_at', 'last_seen_at', 'last_sn_sent_at', 'sn_incident_number', 'sn_incident_sys_id']
+    example_questions:
+      - Which device metrics are currently critical?
+      - When was a metric last seen breaching threshold?
+      - Which alerts already have ServiceNow incident numbers?
+    use_cases: >-
+      Real-time alert triage and routing
+      Tracking ServiceNow synchronization
+      Prioritizing remediation by severity and recency
+
+  - name: MetricAlerts
+    grain: one row per metric alert occurrence
+    description: >-
+      Historical alert events for device metrics with severity, observed values, and thresholds at alert time.
+    fields: ['id', 'device_label', 'metric', 'severity', 'prom_value', 'threshold', 'alert_time']
+    example_questions:
+      - How many alerts fired per metric this week?
+      - Which devices generated the most severe alerts?
+      - What thresholds were exceeded for a given device?
+    use_cases: >-
+      Alert trend analysis
+      Post-incident reviews and SLA reporting
+      Identifying noisy metrics or devices
+
+  - name: MetricsSeverity
+    grain: one row per device metric severity threshold
+    description: >-
+      Configured thresholds and default severities for each device metric.
+    fields: ['device_label', 'metrics', 'threshold', 'severity']
+    example_questions:
+      - What thresholds are configured for Systems/Memory.Memory?
+      - Which devices use custom severity levels?
+      - Are thermal metrics using higher thresholds than power metrics?
+    use_cases: >-
+      Validating monitoring configuration
+      Comparing thresholds across devices
+      Tuning alert sensitivity per metric
+
+  - name: OpenDCIMInfo
+    grain: one row per device inventory record
+    description: >-
+      Detailed inventory for devices including location, cabinet utilization, power, region, colocation vendor, and DCIM status.
+    fields: ['device_label', 'container', 'container_id', 'data_center', 'data_center_id', 'zone', 'zone_id', 'row', 'row_id', 'cabinet', 'cabinet_id', 'device_id', 'chassis_id', 'device_height', 'device_nominal_watts', 'chassis_total_slots', 'chassis_occupied_slots', 'chassis_remaining_slots', 'cabinet_max_height', 'cabinet_occupied_height', 'cabinet_remaining_height', 'cabinet_max_watts', 'cabinet_nominal_watts', 'region', 'country', 'state', 'dc_type', 'colocation_vendor', 'chassis', 'dcim_status', 'redfish_enabled']
+    example_questions:
+      - Which devices in SgpDC have redfish enabled?
+      - How much cabinet height is remaining per row?
+      - What is the nominal wattage for devices in a cabinet?
+    use_cases: >-
+      Asset inventory and placement planning
+      Power and space capacity management
+      Auditing DCIM and Redfish enablement
+
+  - name: RegionDataCenterMapping
+    grain: one row per region to data center mapping
+    description: >-
+      Mapping of regions to their associated data centers.
+    fields: ['region', 'data_center']
+    example_questions:
+      - Which data centers belong to USA?
+      - What regions map to XAP?
+      - How many data centers are in each region?
+    use_cases: >-
+      Regional grouping for reporting
+      Joining operational data to geographic regions
+      Filtering dashboards by region membership
+
+  - name: ServerStatus
+    grain: one row per server status snapshot
+    description: >-
+      Cabinet-level server operational status with power consumption, network throughput, and location in rack units.
+    fields: ['cabinet_id', 'server_id', 'location_u', 'status', 'power_consumed', 'network_throughput_mbps', 'update_datetime']
+    example_questions:
+      - Which servers are currently Critical?
+      - What is the power draw per cabinet?
+      - Which servers have the highest network throughput?
+    use_cases: >-
+      Live server health monitoring
+      Capacity and performance analysis by cabinet
+      Identifying hotspots for remediation
+
+  - name: ServiceNowEventLog
+    grain: one row per ServiceNow event sent
+    description: >-
+      Events forwarded to ServiceNow with payloads, severity, thresholds, and ServiceNow response metadata.
+    fields: ['id', 'msg_key', 'device_label', 'metric', 'severity', 'prom_value', 'threshold', 'payload', 'sn_response', 'incident_number', 'incident_sys_id', 'sent_at']
+    example_questions:
+      - Which ServiceNow incidents were created for memory breaches?
+      - What payloads were sent for a specific device?
+      - When was the last event sent to ServiceNow?
+    use_cases: >-
+      Auditing ServiceNow integrations
+      Troubleshooting event delivery
+      Correlating alert states to incidents
+
+  - name: AlertCronJob
+    grain: one row per alert cron job execution
+    description: >-
+      Execution history for the alert evaluation cron job including status and notes.
+    fields: ['creation_datetime', 'update_datetime', 'uuid', 'status', 'note']
+    example_questions:
+      - Which alert cron runs failed and why?
+      - How often does the job run?
+      - What uuid corresponds to the latest successful run?
+    use_cases: >-
+      Monitoring alert evaluation pipeline health
+      Debugging failed alert executions
+      Linking alert results back to job runs
+
+  - name: AlertMetrics
+    grain: one row per rule target status snapshot
+    description: >-
+      Current status per rule and target (cabinet/row) for each data center as evaluated by alert jobs.
+    fields: ['creation_datetime', 'update_datetime', 'uuid', 'data_center', 'rule_id', 'target', 'status']
+    example_questions:
+      - Which cabinets are failing rule 3?
+      - What is the status of rule 1 across data centers?
+      - How many targets are OK vs failing in the latest run?
+    use_cases: >-
+      Operational monitoring of rule results
+      Highlighting failing cabinets or rows
+      Comparing rule compliance across sites
+
+  - name: AlertMetricsHistory
+    grain: one row per historical rule target evaluation
+    description: >-
+      Historical record of alert rule evaluations per target and data center.
+    fields: ['creation_datetime', 'update_datetime', 'uuid', 'data_center', 'rule_id', 'target', 'status']
+    example_questions:
+      - How has rule 1 status changed for L1R8 over time?
+      - Which targets frequently flip between OK and failure?
+      - When did a target first become OK?
+    use_cases: >-
+      Trend analysis of alert rule outcomes
+      Measuring stability of cabinet and row health
+      Investigating recurring rule violations
+
+  - name: AlertRules
+    grain: one row per alert rule definition
+    description: >-
+      Definitions of alert rules with severity and evaluation frequency.
+    fields: ['creation_datetime', 'update_datetime', 'rule_id', 'rule_details', 'severity', 'frequency']
+    example_questions:
+      - What conditions trigger rule 3?
+      - Which rules are marked Critical?
+      - How often does each rule run?
+    use_cases: >-
+      Documenting alert logic
+      Reviewing monitoring policy coverage
+      Linking rule definitions to evaluation results
+
+  - name: CronJobLogs
+    grain: one row per cron job log entry
+    description: >-
+      Detailed logs of Redfish polling jobs by host, category, and success status.
+    fields: ['id', 'run_id', 'hostname', 'category_id', 'success', 'error_message', 'log_time', 'host_uuid']
+    example_questions:
+      - Which hosts reported failures for Systems/Memory?
+      - How many successful polls occurred per host?
+      - What errors occurred during the latest run?
+    use_cases: >-
+      Troubleshooting polling jobs
+      Tracking data collection reliability
+      Auditing category coverage per host
+
+  - name: CronJobRunningHistory
+    grain: one row per cron job run
+    description: >-
+      Runtime history for scheduled cron jobs including schedule, duration, and completion status.
+    fields: ['run_id', 'schedule', 'start_time', 'end_time', 'status']
+    example_questions:
+      - What runs are still in RUNNING status?
+      - How long do 10min schedules typically take?
+      - Which run_id corresponds to a specific time window?
+    use_cases: >-
+      Monitoring scheduler throughput and lag
+      Identifying stuck or long-running jobs
+      Correlating data freshness with job runs
+
+  - name: EtlRecord
+    grain: one row per ETL file import
+    description: >-
+      Records of ETL imports including filename, UUID, inserted lines, status, and source host.
+    fields: ['etl_process_datetime', 'import_filename', 'uuid', 'filelines_inserted', 'status', 'hostname']
+    example_questions:
+      - Which ETL runs failed or are missing?
+      - How many lines were inserted per file?
+      - Which hosts produced the latest imports?
+    use_cases: >-
+      Auditing data ingestion
+      Tracking ETL throughput and volume
+      Troubleshooting missing or failed imports
+
+  - name: EventMetrics
+    grain: one row per event metric attribute
+    description: >-
+      Raw Redfish metric attributes with category, component, attribute name/value, and host context.
+    fields: ['creation_datetime', 'uuid', 'category', 'component_id', 'attrname', 'attrvalue', 'hostname']
+    example_questions:
+      - What power metrics were reported for a specific host?
+      - Which attributes changed within a time window?
+      - How many event records were collected per category?
+    use_cases: >-
+      Low-level telemetry analysis
+      Validating Redfish payload content
+      Supporting forensic investigations
+
+  - name: Servers
+    grain: one row per active server
+    description: >-
+      Active Redfish-managed servers with model, vendor, serial, IP, polling frequency, and activation flag.
+    fields: ['creation_datetime', 'update_datetime', 'server_sku', 'hostname', 'server_ip', 'redfish_version', 'frequency', 'active', 'vendor', 'server_model', 'server_serial']
+    example_questions:
+      - Which servers are active and managed at 20m frequency?
+      - What vendor mix exists across hosts?
+      - Which hostnames correspond to specific SKUs?
+    use_cases: >-
+      Inventory of managed servers
+      Vendor and model distribution analysis
+      Linking servers to telemetry endpoints
+
+  - name: ServersDecommission
+    grain: one row per decommissioned server
+    description: >-
+      Decommissioned servers with reasons and timestamps.
+    fields: ['creation_datetime', 'update_datetime', 'hostname', 'reason']
+    example_questions:
+      - Which hosts were decommissioned for Redfish incompatibility?
+      - When was a specific host retired?
+      - What are the most common decommission reasons?
+    use_cases: >-
+      Lifecycle tracking and audit
+      Planning replacements for retired hardware
+      Filtering inactive hosts from monitoring
+
+  - name: ServersEndpoints
+    grain: one row per server endpoint path
+    description: >-
+      Redfish endpoint URLs per server, categorized by hardware subsystem.
+    fields: ['creation_datetime', 'update_datetime', 'hostname', 'server_ip', 'category_id', 'url']
+    example_questions:
+      - Which endpoints exist for XCDSDA51?
+      - What URLs correspond to Systems/Memory?
+      - How many endpoints per category are configured?
+    use_cases: >-
+      Building API calls to Redfish endpoints
+      Auditing endpoint coverage by host
+      Troubleshooting missing or incorrect URLs
+
+  - name: ServersMcMap
+    grain: one row per server to management controller mapping
+    description: >-
+      Mapping of server hostnames to their management controller grouping.
+    fields: ['hostname', 'mc']
+    example_questions:
+      - Which servers belong to the mc controller?
+      - How many hosts map to each management controller?
+      - Which mapped hosts are in a specific data center?
+    use_cases: >-
+      Grouping servers by management controller
+      Scoping polling or maintenance by MC group
+      Cross-referencing MC mapping with inventory

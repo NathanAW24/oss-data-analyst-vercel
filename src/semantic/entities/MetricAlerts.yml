@@ -1,0 +1,70 @@
+name: MetricAlerts
+type: fact_table
+table: opendcim.metric_alerts
+grain: one row per metric alert occurrence
+description: Historical alert events for device metrics with severity, observed values, and thresholds.
+common_questions:
+  - How many alerts fired per metric in a given period?
+  - Which devices triggered the most severe alerts?
+  - What value exceeded the threshold for a specific device?
+
+dimensions:
+  - name: id
+    sql: id
+    type: number
+    description: Unique alert identifier
+
+  - name: device_label
+    sql: device_label
+    type: string
+    description: Device hostname or label
+
+  - name: metric
+    sql: metric
+    type: string
+    description: Metric path or identifier
+
+  - name: severity
+    sql: severity
+    type: number
+    description: Alert severity level
+
+  - name: prom_value
+    sql: prom_value
+    type: number
+    description: Observed metric value at alert time
+
+  - name: threshold
+    sql: threshold
+    type: number
+    description: Threshold value that triggered the alert
+
+time_dimensions:
+  - name: alert_time
+    sql: alert_time
+    type: time
+    description: Timestamp when the alert was raised
+
+measures:
+  - name: alert_count
+    sql: id
+    type: count_distinct
+    description: Count of alerts
+
+  - name: avg_prom_value
+    sql: prom_value
+    type: avg
+    description: Average observed metric value for alerts
+
+joins:
+  - target_entity: MetricAlertState
+    relationship: many_to_one
+    join_columns:
+      from: device_label
+      to: device_label
+
+  - target_entity: MetricsSeverity
+    relationship: many_to_one
+    join_columns:
+      from: metric
+      to: metrics

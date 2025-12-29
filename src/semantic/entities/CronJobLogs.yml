@@ -1,0 +1,81 @@
+name: CronJobLogs
+type: fact_table
+table: redfishdb.cron_job_logs
+grain: one row per cron job log entry
+description: Logs of Redfish polling jobs by host, category, and success status.
+common_questions:
+  - Which hosts had failed polls for a given category?
+  - How many successful polls occurred per host?
+  - What errors were reported in the latest runs?
+
+dimensions:
+  - name: id
+    sql: id
+    type: number
+    description: Unique log entry identifier
+
+  - name: run_id
+    sql: run_id
+    type: string
+    description: Identifier of the cron run
+
+  - name: hostname
+    sql: hostname
+    type: string
+    description: Hostname polled during the run
+
+  - name: category_id
+    sql: category_id
+    type: string
+    description: Category of Redfish endpoint polled
+
+  - name: success
+    sql: success
+    type: boolean
+    description: Indicates whether the poll succeeded
+
+  - name: error_message
+    sql: error_message
+    type: string
+    description: Error message if the poll failed
+
+  - name: host_uuid
+    sql: host_uuid
+    type: string
+    description: Host UUID associated with the run
+
+time_dimensions:
+  - name: log_time
+    sql: log_time
+    type: time
+    description: Timestamp of the log entry
+
+measures:
+  - name: log_count
+    sql: id
+    type: count_distinct
+    description: Count of cron job log entries
+
+  - name: success_count
+    sql: CASE WHEN success THEN 1 ELSE 0 END
+    type: sum
+    description: Number of successful polls
+
+joins:
+  - target_entity: EventMetrics
+    relationship: one_to_many
+    join_columns:
+      from: host_uuid
+      to: uuid
+
+  - target_entity: CronJobRunningHistory
+    relationship: many_to_one
+    join_columns:
+      from: run_id
+      to: run_id
+
+  - target_entity: Servers
+    relationship: many_to_one
+    join_columns:
+      from: hostname
+      to: hostname

@@ -1,0 +1,33 @@
+name: ServersMcMap
+type: dimension_table
+table: redfishdb.servers_mc_map
+grain: one row per server to management controller mapping
+description: Mapping of server hostnames to their management controller grouping.
+common_questions:
+  - Which servers belong to a specific management controller?
+  - How many hosts map to each controller?
+  - Which mapped hosts are active?
+
+dimensions:
+  - name: hostname
+    sql: hostname
+    type: string
+    description: Server hostname
+
+  - name: mc
+    sql: mc
+    type: string
+    description: Management controller group
+
+measures:
+  - name: mc_mapping_count
+    sql: hostname
+    type: count
+    description: Count of host-to-controller mappings
+
+joins:
+  - target_entity: Servers
+    relationship: many_to_one
+    join_columns:
+      from: hostname
+      to: hostname

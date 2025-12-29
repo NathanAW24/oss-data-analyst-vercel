@@ -1,0 +1,71 @@
+name: EventMetrics
+type: fact_table
+table: redfishdb.event_metrics
+grain: one row per event metric attribute
+description: Raw Redfish metric attributes with category, component, attribute name/value, and host context.
+common_questions:
+  - What power metrics were reported for a host at a specific time?
+  - Which attributes changed for a component during an interval?
+  - How many event records were collected per category?
+
+dimensions:
+  - name: uuid
+    sql: uuid
+    type: string
+    description: Event UUID
+
+  - name: category
+    sql: category
+    type: string
+    description: Metric category path (e.g., Chassis/Power.PowerControl)
+
+  - name: component_id
+    sql: component_id
+    type: number
+    description: Component identifier within the category
+
+  - name: attrname
+    sql: attrname
+    type: string
+    description: Attribute name
+
+  - name: attrvalue
+    sql: attrvalue
+    type: string
+    description: Attribute value captured
+
+  - name: hostname
+    sql: hostname
+    type: string
+    description: Hostname providing the metric
+
+time_dimensions:
+  - name: creation_datetime
+    sql: creation_datetime
+    type: time
+    description: Timestamp when the event was recorded
+
+measures:
+  - name: event_metric_count
+    sql: uuid
+    type: count
+    description: Count of event metric records
+
+joins:
+  - target_entity: CronJobLogs
+    relationship: many_to_one
+    join_columns:
+      from: uuid
+      to: host_uuid
+
+  - target_entity: OpenDCIMInfo
+    relationship: many_to_one
+    join_columns:
+      from: hostname
+      to: device_label
+
+  - target_entity: Servers
+    relationship: many_to_one
+    join_columns:
+      from: hostname
+      to: hostname

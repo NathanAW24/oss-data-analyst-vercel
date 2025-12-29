@@ -1,0 +1,65 @@
+name: AlertMetricsHistory
+type: fact_table
+table: redfishdb.alert_metrics_hist
+grain: one row per historical rule target evaluation
+description: Historical evaluations of alert rules by target and data center.
+common_questions:
+  - How has rule status changed for a cabinet over time?
+  - Which targets frequently change from OK to failure?
+  - What was the status of rule 1 last month?
+
+dimensions:
+  - name: creation_datetime
+    sql: creation_datetime
+    type: time
+    description: When the record was created
+
+  - name: update_datetime
+    sql: update_datetime
+    type: time
+    description: When the record was last updated
+
+  - name: uuid
+    sql: uuid
+    type: string
+    description: Identifier of the cron run that produced the evaluation
+
+  - name: data_center
+    sql: data_center
+    type: string
+    description: Data center code evaluated by the rule
+
+  - name: rule_id
+    sql: rule_id
+    type: number
+    description: Rule identifier
+
+  - name: target
+    sql: target
+    type: string
+    description: Target cabinet or row evaluated
+
+  - name: status
+    sql: status
+    type: string
+    description: Evaluation status for the target
+    sample_values: [OK, FAIL]
+
+measures:
+  - name: historical_target_count
+    sql: target
+    type: count
+    description: Count of historical evaluations
+
+joins:
+  - target_entity: AlertCronJob
+    relationship: many_to_one
+    join_columns:
+      from: uuid
+      to: uuid
+
+  - target_entity: AlertRules
+    relationship: many_to_one
+    join_columns:
+      from: rule_id
+      to: rule_id

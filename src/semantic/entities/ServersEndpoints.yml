@@ -1,0 +1,53 @@
+name: ServersEndpoints
+type: fact_table
+table: redfishdb.servers_endpoints
+grain: one row per server endpoint path
+description: Redfish endpoint URLs per server categorized by hardware subsystem.
+common_questions:
+  - Which endpoints are available for a given host?
+  - What URLs correspond to Systems/Memory?
+  - How many endpoints per category does each server expose?
+
+dimensions:
+  - name: creation_datetime
+    sql: creation_datetime
+    type: time
+    description: When the endpoint record was created
+
+  - name: update_datetime
+    sql: update_datetime
+    type: time
+    description: When the endpoint record was last updated
+
+  - name: hostname
+    sql: hostname
+    type: string
+    description: Hostname owning the endpoint
+
+  - name: server_ip
+    sql: server_ip
+    type: string
+    description: IP address of the server
+
+  - name: category_id
+    sql: category_id
+    type: string
+    description: Endpoint category (e.g., Chassis/Power)
+
+  - name: url
+    sql: url
+    type: string
+    description: Redfish URL for the endpoint
+
+measures:
+  - name: endpoint_count
+    sql: url
+    type: count
+    description: Count of endpoints
+
+joins:
+  - target_entity: Servers
+    relationship: many_to_one
+    join_columns:
+      from: hostname
+      to: hostname

@@ -1,0 +1,45 @@
+name: RegionDataCenterMapping
+type: dimension_table
+table: opendcim.region_data_center_mapping
+grain: one row per region to data center mapping
+description: Mapping of regions to their associated data centers.
+common_questions:
+  - Which data centers belong to Singapore?
+  - How many data centers exist per region?
+  - What region is a given data center in?
+
+dimensions:
+  - name: region
+    sql: region
+    type: string
+    description: Region name
+
+  - name: data_center
+    sql: data_center
+    type: string
+    description: Data center code
+
+measures:
+  - name: mapping_count
+    sql: data_center
+    type: count
+    description: Count of region-data center mappings
+
+joins:
+  - target_entity: CabinetStatus
+    relationship: one_to_many
+    join_columns:
+      from: data_center
+      to: data_center
+
+  - target_entity: AlertMetrics
+    relationship: one_to_many
+    join_columns:
+      from: data_center
+      to: data_center
+
+  - target_entity: Locations
+    relationship: many_to_one
+    join_columns:
+      from: data_center
+      to: data_center

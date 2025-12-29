@@ -1,0 +1,90 @@
+name: ServiceNowEventLog
+type: fact_table
+table: opendcim.servicenow_event_log
+grain: one row per ServiceNow event sent
+description: Events forwarded to ServiceNow with payloads, severity, thresholds, and response metadata.
+common_questions:
+  - Which ServiceNow incidents were opened for a device?
+  - What payload was sent for a specific metric breach?
+  - How many events were sent on a given date?
+
+dimensions:
+  - name: id
+    sql: id
+    type: number
+    description: Unique event log identifier
+
+  - name: msg_key
+    sql: msg_key
+    type: string
+    description: Message key tying to alert states
+
+  - name: device_label
+    sql: device_label
+    type: string
+    description: Device hostname or label
+
+  - name: metric
+    sql: metric
+    type: string
+    description: Metric associated with the event
+
+  - name: severity
+    sql: severity
+    type: number
+    description: Severity level sent to ServiceNow
+
+  - name: prom_value
+    sql: prom_value
+    type: number
+    description: Metric value at event time
+
+  - name: threshold
+    sql: threshold
+    type: number
+    description: Threshold associated with the event
+
+  - name: payload
+    sql: payload
+    type: string
+    description: Event payload sent to ServiceNow
+
+  - name: sn_response
+    sql: sn_response
+    type: string
+    description: ServiceNow response payload
+
+  - name: incident_number
+    sql: incident_number
+    type: string
+    description: ServiceNow incident number
+
+  - name: incident_sys_id
+    sql: incident_sys_id
+    type: string
+    description: ServiceNow incident sys_id
+
+time_dimensions:
+  - name: sent_at
+    sql: sent_at
+    type: time
+    description: Timestamp when the event was sent
+
+measures:
+  - name: event_count
+    sql: id
+    type: count_distinct
+    description: Count of ServiceNow events
+
+joins:
+  - target_entity: MetricAlertState
+    relationship: many_to_one
+    join_columns:
+      from: msg_key
+      to: msg_key
+
+  - target_entity: MetricAlerts
+    relationship: many_to_one
+    join_columns:
+      from: device_label
+      to: device_label

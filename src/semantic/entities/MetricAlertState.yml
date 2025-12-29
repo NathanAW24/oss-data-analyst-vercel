@@ -1,0 +1,96 @@
+name: MetricAlertState
+type: fact_table
+table: opendcim.metric_alert_state
+grain: one row per device metric alert state
+description: Current severity and ServiceNow linkage for each device metric with first/last seen times.
+common_questions:
+  - Which device metrics are currently critical?
+  - When was the last time a metric breached its threshold?
+  - Which alerts already have ServiceNow incident numbers?
+
+dimensions:
+  - name: msg_key
+    sql: msg_key
+    type: string
+    description: Unique message key for the alert state
+
+  - name: device_label
+    sql: device_label
+    type: string
+    description: Device hostname or label
+
+  - name: metric
+    sql: metric
+    type: string
+    description: Metric path or identifier
+
+  - name: current_severity
+    sql: current_severity
+    type: number
+    description: Current severity level
+
+  - name: last_prom_value
+    sql: last_prom_value
+    type: number
+    description: Last observed Prometheus value
+
+  - name: last_threshold
+    sql: last_threshold
+    type: number
+    description: Threshold applied to the metric
+
+  - name: last_sn_sent_at
+    sql: last_sn_sent_at
+    type: time
+    description: Timestamp of the last ServiceNow notification
+
+  - name: sn_incident_number
+    sql: sn_incident_number
+    type: string
+    description: ServiceNow incident number if created
+
+  - name: sn_incident_sys_id
+    sql: sn_incident_sys_id
+    type: string
+    description: ServiceNow incident sys_id
+
+time_dimensions:
+  - name: first_seen_at
+    sql: first_seen_at
+    type: time
+    description: When the alert state was first observed
+
+  - name: last_seen_at
+    sql: last_seen_at
+    type: time
+    description: Last time the alert state was observed
+
+measures:
+  - name: active_alerts
+    sql: msg_key
+    type: count_distinct
+    description: Count of active metric alert states
+
+  - name: avg_last_value
+    sql: last_prom_value
+    type: avg
+    description: Average of last observed values
+
+joins:
+  - target_entity: MetricAlerts
+    relationship: one_to_many
+    join_columns:
+      from: device_label
+      to: device_label
+
+  - target_entity: MetricsSeverity
+    relationship: many_to_one
+    join_columns:
+      from: device_label
+      to: device_label
+
+  - target_entity: ServiceNowEventLog
+    relationship: one_to_many
+    join_columns:
+      from: msg_key
+      to: msg_key

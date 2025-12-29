@@ -1,0 +1,76 @@
+name: AlertMetrics
+type: fact_table
+table: redfishdb.alert_metrics
+grain: one row per rule target status snapshot
+description: Current status per alert rule and target for each data center and cron run.
+common_questions:
+  - Which cabinets or rows are failing rule 3?
+  - What is the status of rule 1 across data centers?
+  - How many targets are OK in the latest run?
+
+dimensions:
+  - name: creation_datetime
+    sql: creation_datetime
+    type: time
+    description: When the record was created
+
+  - name: update_datetime
+    sql: update_datetime
+    type: time
+    description: When the record was last updated
+
+  - name: uuid
+    sql: uuid
+    type: string
+    description: Identifier linking to the cron run
+
+  - name: data_center
+    sql: data_center
+    type: string
+    description: Data center code evaluated by the rule
+
+  - name: rule_id
+    sql: rule_id
+    type: number
+    description: Rule identifier
+
+  - name: target
+    sql: target
+    type: string
+    description: Target cabinet or row evaluated
+
+  - name: status
+    sql: status
+    type: string
+    description: Evaluation status for the target
+    sample_values: [OK, FAIL]
+
+measures:
+  - name: target_count
+    sql: target
+    type: count
+    description: Count of evaluated targets
+
+  - name: ok_targets
+    sql: CASE WHEN status = 'OK' THEN 1 ELSE 0 END
+    type: sum
+    description: Number of targets marked OK
+
+joins:
+  - target_entity: AlertCronJob
+    relationship: many_to_one
+    join_columns:
+      from: uuid
+      to: uuid
+
+  - target_entity: AlertRules
+    relationship: many_to_one
+    join_columns:
+      from: rule_id
+      to: rule_id
+
+  - target_entity: RegionDataCenterMapping
+    relationship: many_to_one
+    join_columns:
+      from: data_center
+      to: data_center

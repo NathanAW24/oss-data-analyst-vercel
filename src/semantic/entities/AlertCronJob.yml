@@ -1,0 +1,55 @@
+name: AlertCronJob
+type: fact_table
+table: redfishdb.alert_cron_job
+grain: one row per alert cron job execution
+description: Execution history for alert evaluation jobs with status and notes.
+common_questions:
+  - Which cron executions failed and why?
+  - What was the latest successful run uuid?
+  - How many cron runs executed on a given day?
+
+dimensions:
+  - name: creation_datetime
+    sql: creation_datetime
+    type: time
+    description: Time when the cron entry was created
+
+  - name: update_datetime
+    sql: update_datetime
+    type: time
+    description: Time when the cron entry was last updated
+
+  - name: uuid
+    sql: uuid
+    type: string
+    description: Unique identifier for the cron run
+
+  - name: status
+    sql: status
+    type: string
+    description: Execution status
+    sample_values: [PASS, FAIL]
+
+  - name: note
+    sql: note
+    type: string
+    description: Notes or traceback for the run
+
+measures:
+  - name: cron_run_count
+    sql: uuid
+    type: count_distinct
+    description: Count of cron job executions
+
+joins:
+  - target_entity: AlertMetrics
+    relationship: one_to_many
+    join_columns:
+      from: uuid
+      to: uuid
+
+  - target_entity: AlertMetricsHistory
+    relationship: one_to_many
+    join_columns:
+      from: uuid
+      to: uuid
