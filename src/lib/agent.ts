@@ -1,4 +1,4 @@
-import type { LanguageModel, UIMessage } from "ai";
+import type { UIMessage } from "ai";
 import {
   stepCountIs,
   Experimental_Agent as _,
@@ -6,7 +6,6 @@ import {
   convertToModelMessages,
   streamText,
 } from "ai";
-import { openai } from "@ai-sdk/openai";
 import {
   AssessEntityCoverage,
   ClarifyIntent,
@@ -56,6 +55,8 @@ import { EXECUTION_MANAGER_SYSTEM_PROMPT } from "./prompts/execution";
 import { REPORTING_SPECIALIST_SYSTEM_PROMPT } from "./prompts/reporting";
 import { ListEntities } from "./semantic/io";
 import { sqlEvalSet } from "./sample-queries";
+import { openai } from "@/lib/providers/openai";
+import type { LanguageModelV1 } from "ai";
 interface Message {
   role: "user" | "assistant" | "system";
   content: string;
@@ -71,11 +72,20 @@ export async function runAgent({
   prompt?: string;
   model?: string;
 }) {
+  const resolvedModel: LanguageModelV1 | string = (() => {
+    if (!model) return openai("gpt-5");
+    if (model.startsWith("openai/")) {
+      const [, modelName] = model.split("/");
+      return openai(modelName || "gpt-5");
+    }
+    return model;
+  })();
+
   let phase: Phase = "planning";
   const possibleEntities = await ListEntities();
 
   const result = streamText({
-    model,
+    model: resolvedModel,
     messages: convertToModelMessages(messages),
     providerOptions: {
       openai: {
