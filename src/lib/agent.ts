@@ -77,8 +77,8 @@ export async function runAgent({
     messages: convertToModelMessages(messages),
     providerOptions: {
       openai: {
+        reasoning: { effort: "medium" },
         reasoningSummary: "detailed",
-        reasoningEffort: "medium",
       },
     },
     tools: {
