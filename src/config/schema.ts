@@ -17,11 +17,11 @@ export const configSchema = z
     // AI Gateway Configuration
     // AI_GATEWAY_API_KEY: z.string().min(1, "AI_GATEWAY_API_KEY is required"),
 
-    // Snowflake Configuration
-    SNOWFLAKE_ACCOUNT: z.string().min(1, "SNOWFLAKE_ACCOUNT is required"),
-    SNOWFLAKE_USERNAME: z.string().min(1, "SNOWFLAKE_USERNAME is required"),
-    SNOWFLAKE_PASSWORD: z.string().min(1, "SNOWFLAKE_PASSWORD is required"),
-    SNOWFLAKE_WAREHOUSE: z.string().min(1, "SNOWFLAKE_WAREHOUSE is required"),
+    // Snowflake Configuration (optional)
+    SNOWFLAKE_ACCOUNT: z.string().optional(),
+    SNOWFLAKE_USERNAME: z.string().optional(),
+    SNOWFLAKE_PASSWORD: z.string().optional(),
+    SNOWFLAKE_WAREHOUSE: z.string().optional(),
     SNOWFLAKE_DATABASE: z.string().optional(),
     SNOWFLAKE_SCHEMA: z.string().optional(),
     SNOWFLAKE_ROLE: z.string().optional(),
@@ -36,6 +36,15 @@ export const configSchema = z
       .transform((v) => v === "true")
       .default(true)
       .optional(),
+
+    // Postgres Configuration (preferred)
+    POSTGRES_URL: z.string().url().optional(),
+    POSTGRES_HOST: z.string().optional(),
+    POSTGRES_PORT: z.string().transform(Number).default(5432),
+    POSTGRES_DATABASE: z.string().optional(),
+    POSTGRES_USER: z.string().optional(),
+    POSTGRES_PASSWORD: z.string().optional(),
+    POSTGRES_SSL: z.string().transform((v) => v === "true").default(false),
 
     // Runtime Flags
     STRICT_SQL_VALIDATION: z
@@ -63,6 +72,21 @@ export const configSchema = z
     LANGFUSE_PUBLIC_KEY: z.string().optional(),
     LANGFUSE_BASEURL: z.string().url().optional(),
   })
+  .refine(
+    (data) => {
+      const hasUrl = !!data.POSTGRES_URL;
+      const hasParts =
+        !!data.POSTGRES_HOST &&
+        !!data.POSTGRES_DATABASE &&
+        !!data.POSTGRES_USER &&
+        !!data.POSTGRES_PASSWORD;
+      return hasUrl || hasParts;
+    },
+    {
+      message:
+        "POSTGRES_URL or POSTGRES_HOST/POSTGRES_USER/POSTGRES_PASSWORD/POSTGRES_DATABASE is required",
+    }
+  )
   .refine(
     (data) => {
       // If observability is enabled, Langfuse keys are required

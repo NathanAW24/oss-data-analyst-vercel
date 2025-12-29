@@ -29,9 +29,9 @@ export function loadConfig(): Config {
       if (error.message.includes("OPENAI_API_KEY")) {
         console.error("💡 Set OPENAI_API_KEY in your .env file");
       }
-      if (error.message.includes("SNOWFLAKE_")) {
+      if (error.message.includes("POSTGRES_")) {
         console.error(
-          "💡 Ensure all SNOWFLAKE_* variables are set in your .env file",
+          "💡 Set POSTGRES_URL or POSTGRES_HOST/POSTGRES_USER/POSTGRES_PASSWORD/POSTGRES_DATABASE in your .env file",
         );
       }
       if (error.message.includes("LANGFUSE_")) {

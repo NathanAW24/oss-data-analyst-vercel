@@ -2,7 +2,7 @@
 
 oss-data-analyst is an intelligent AI agent that converts natural language questions into SQL queries and provides data analysis. Built with the Vercel AI SDK, it features multi-phase reasoning (planning, building, execution, reporting) and streams results in real-time.
 
-> **Note**: This is a reference architecture. The semantic catalog and schemas included are simplified examples for demonstration purposes. Production implementations should use your own data models and schemas.
+> **Note**: The semantic catalog in `src/semantic/` should reflect your own data model. This setup now targets PostgreSQL instead of the original demo SQLite database.
 
 ## Features
 
@@ -39,20 +39,16 @@ oss-data-analyst is an intelligent AI agent that converts natural language quest
    ```bash
    cp env.local.example .env.local
    ```
-   Edit `.env.local` and add your Vercel AI Gateway key
+   Edit `.env.local` and add:
+   - `OPENAI_API_KEY`
+   - Postgres connection (`POSTGRES_URL` or host/port/user/password/db + `POSTGRES_SSL`)
 
-4. **Initialize the database**
-   ```bash
-   pnpm initDatabase
-   ```
-   This creates a SQLite database with sample data (Companies, People, Accounts)
-
-5. **Run the development server**
+4. **Run the development server**
    ```bash
    pnpm dev
    ```
 
-6. **Open your browser**
+5. **Open your browser**
    Navigate to `http://localhost:3000`
 
 ### Build for Production
@@ -62,29 +58,9 @@ pnpm build
 pnpm start
 ```
 
-## Sample Schema
+## Schema
 
-This repository includes a sample database schema with three main entities to demonstrate oss-data-analyst's capabilities:
-
-### **Companies**
-Represents organizations in your database. Each company has:
-- Basic information (name, industry, employee count)
-- Business metrics (founded date, status)
-- Example: Technology companies, Healthcare organizations, etc.
-
-### **Accounts**
-Represents customer accounts or subscriptions tied to companies. Each account includes:
-- Account identification (account number, status)
-- Financial metrics (monthly recurring value, contract details)
-- Relationship to parent company
-- Example: Active subscriptions with monthly values ranging from $10k-$50k
-
-### **People**
-Represents individual employees or contacts within companies. Each person has:
-- Personal information (name, email)
-- Employment details (department, title, salary)
-- Relationship to their company
-- Example: Engineers, Sales representatives, Managers across different departments
+Define your semantic model in `src/semantic/` (entities, catalog, dimensions). These files should mirror the tables/columns in your PostgreSQL database. Update them whenever your database schema changes.
 
 
 ## How It Works
@@ -136,19 +112,18 @@ Try asking oss-data-analyst (using the sample database):
 - "What is the total revenue for Active accounts?"
 - "How many people work in Engineering?"
 
-## Using with Production Databases
+## Using with PostgreSQL
 
-The default setup uses SQLite for demonstration. To use with Snowflake or other databases:
-
-1. Update `src/lib/oss-data-analyst-agent-advanced.ts` to import from `./tools/execute` instead of `./tools/execute-sqlite`
-2. Configure your database credentials in `.env.local`
-3. Update the semantic catalog in `src/lib/semantic/` with your schema definitions
+- SQL generation renders PostgreSQL syntax (filter aggregates, standard JOINs).
+- The agent uses Postgres execution tools in `src/lib/tools/execute-postgres.ts`.
+- Configure Postgres credentials in `.env.local` (URL or host/port/user/password).
+- Ensure `src/semantic/` entities match your Postgres tables and schemas.
 
 ## Troubleshooting
 
-**Database Not Found**
-- Run `pnpm initDatabase` to create and seed the database
-- Check that `data/oss-data-analyst.db` exists
+**Database Connectivity**
+- Verify Postgres env vars are set (`POSTGRES_URL` or host/port/user/password).
+- Confirm your user has SELECT on the tables referenced in `src/semantic/`.
 
 **AI Gateway API Errors**
 - Verify your API key is valid in `.env.local`

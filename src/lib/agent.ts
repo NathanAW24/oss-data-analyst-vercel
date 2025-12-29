@@ -17,31 +17,17 @@ import {
   SearchCatalog,
   SearchSchema,
 } from "./tools/planning";
-// Use SQLite building tools for demo/development
-import { BuildSQL, FinalizeBuild, ValidateSQL } from "./tools/building-sqlite";
-
-// For production Snowflake usage, use:
-// import {
-//   BuildSQL,
-//   FinalizeBuild,
-//   JoinPathFinder,
-//   ValidateSQL,
-// } from "./tools/building";
-
-// Use SQLite execution tools for demo/development
+import {
+  BuildSQL,
+  FinalizeBuild,
+  JoinPathFinder,
+  ValidateSQL,
+} from "./tools/building";
 import {
   EstimateCost,
   ExecuteSQL,
   ExecuteSQLWithRepair,
-} from "./tools/execute-sqlite";
-
-// For production Snowflake usage, use:
-// import {
-//   EstimateCost,
-//   ExecuteSQL,
-//   ExecuteSQLWithRepair,
-//   ExplainSnowflake,
-// } from "./tools/execute";
+} from "./tools/execute-postgres";
 import {
   ExplainResults,
   FinalizeReport,
@@ -188,14 +174,19 @@ export async function runAgent({
 
       if (phase === "building") {
         return {
-          system: `${BUILDING_SPECIALIST_SYSTEM_PROMPT}\n\nYou are generating SQL for a SQLite database. Use standard SQL syntax compatible with SQLite. The schema uses simple table names: companies, people, accounts.`,
-          activeTools: ["BuildSQL", "ValidateSQL", "FinalizeBuild"],
+          system: `${BUILDING_SPECIALIST_SYSTEM_PROMPT}\n\nYou are generating SQL for a PostgreSQL database. Use standard PostgreSQL syntax. Ensure joins and identifiers align with the provided semantic entities.`,
+          activeTools: [
+            "JoinPathFinder",
+            "BuildSQL",
+            "ValidateSQL",
+            "FinalizeBuild",
+          ],
         };
       }
 
       if (phase === "execution") {
         return {
-          system: `${EXECUTION_MANAGER_SYSTEM_PROMPT}\n\nYou are working with a SQLite database. Use ExecuteSQLWithRepair to run the final query. EstimateCost is available but returns simplified estimates for SQLite.`,
+          system: `${EXECUTION_MANAGER_SYSTEM_PROMPT}\n\nYou are working with a PostgreSQL database. Use ExecuteSQLWithRepair to run the final query. EstimateCost is a simple heuristic placeholder.`,
           activeTools: ["EstimateCost", "ExecuteSQLWithRepair"],
         };
       }

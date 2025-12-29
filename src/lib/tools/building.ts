@@ -38,7 +38,7 @@ export const JoinPathFinder = tool({
 
 export const BuildSQL = tool({
   description:
-    "Render Snowflake SQL from the finalized plan and available entities.",
+    "Render PostgreSQL SQL from the finalized plan and available entities.",
   inputSchema: planInputSchema,
   execute: async ({ plan }) => {
     console.log("[BuildSQL] Received plan:", JSON.stringify(plan, null, 2));

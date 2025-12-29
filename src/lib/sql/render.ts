@@ -1,4 +1,4 @@
-// SQL rendering logic for converting plans to Snowflake SQL
+// SQL rendering logic for converting plans to PostgreSQL SQL
 
 import type { FinalizedPlan, Intent, JoinEdge as PlanJoinEdge } from '@/lib/planning/types';
 import type { EntityJson, MeasureRaw, MetricRaw } from '@/lib/semantic/types';
@@ -120,26 +120,24 @@ function buildMetricExpr(
   // Apply metric-level filters inside the aggregation:
   const filters = metric.source.filters ?? [];
   if (filters.length > 0) {
-    // For COUNT(*) with predicates, use COUNT_IF; for others, wrap with IFF
+    // Use PostgreSQL FILTER clauses
     const preds = filters.map(f => buildPredicate(f as any, ctx));
     const pred = preds.length === 1 ? preds[0] : `(${preds.join(') AND (')})`;
 
     if (measure.type === 'count') {
-      // Snowflake-specific COUNT_IF
-      agg = `COUNT_IF(${pred})`;
+      agg = `COUNT(*) FILTER (WHERE ${pred})`;
     } else if (measure.type === 'count_distinct') {
-      // IFF(predicate, expr, NULL) inside DISTINCT
       const sqlExpr = expandSqlExpression(measure.sql!, {
         ...ctx,
         currentEntity: hostEntity.name
       });
-      agg = `COUNT(DISTINCT IFF(${pred}, ${sqlExpr}, NULL))`;
+      agg = `COUNT(DISTINCT ${sqlExpr}) FILTER (WHERE ${pred})`;
     } else {
       const sqlExpr = expandSqlExpression(measure.sql!, {
         ...ctx,
         currentEntity: hostEntity.name
       });
-      agg = `${measure.type.toUpperCase()}(IFF(${pred}, ${sqlExpr}, NULL))`;
+      agg = `${measure.type.toUpperCase()}(${sqlExpr}) FILTER (WHERE ${pred})`;
     }
   }
 
