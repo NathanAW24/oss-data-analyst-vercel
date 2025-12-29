@@ -102,6 +102,14 @@ export async function runAgent({
       ExplainResults,
       FinalizeReport,
     },
+    onFinish: ({ text, reasoningText, reasoning }) => {
+      if (reasoningText || (reasoning && reasoning.length > 0)) {
+        console.log("[Agent][Reasoning]", reasoningText ?? JSON.stringify(reasoning));
+      }
+      if (text) {
+        console.log("[Agent][Answer]", text);
+      }
+    },
     stopWhen: [
       (ctx) =>
         ctx.steps.some((step) =>
