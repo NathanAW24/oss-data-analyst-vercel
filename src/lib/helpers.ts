@@ -4,7 +4,7 @@ import { openai } from "@/lib/providers/openai";
 
 export const extractSQLFromText = async (text: string): Promise<string> => {
   const { object } = await generateObject({
-    model: openai("gpt-5-mini"),
+    model: openai("gpt-5.1-codex-max"),
     messages: [
       {
         role: "system",

@@ -57,6 +57,8 @@ import { ListEntities } from "./semantic/io";
 import { sqlEvalSet } from "./sample-queries";
 import { openai } from "@/lib/providers/openai";
 import type { LanguageModelV1 } from "ai";
+
+const DEFAULT_OPENAI_MODEL = "gpt-5.1-codex-max";
 interface Message {
   role: "user" | "assistant" | "system";
   content: string;
@@ -66,17 +68,17 @@ export type Phase = "planning" | "building" | "execution" | "reporting";
 export async function runAgent({
   messages,
   prompt,
-  model = "openai/gpt-5",
+  model = "openai/gpt-5.1-codex-max",
 }: {
   messages: UIMessage[];
   prompt?: string;
   model?: string;
 }) {
   const resolvedModel: LanguageModelV1 | string = (() => {
-    if (!model) return openai("gpt-5");
+    if (!model) return openai(DEFAULT_OPENAI_MODEL);
     if (model.startsWith("openai/")) {
       const [, modelName] = model.split("/");
-      return openai(modelName || "gpt-5");
+      return openai(modelName || DEFAULT_OPENAI_MODEL);
     }
     return model;
   })();

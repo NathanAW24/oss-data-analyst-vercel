@@ -54,8 +54,8 @@ import { Loader } from "@/components/ai-elements/loader";
 
 const models = [
   {
-    name: "GPT-5",
-    value: "openai/gpt-5",
+    name: "GPT-5.1 Codex Max",
+    value: "openai/gpt-5.1-codex-max",
   },
   {
     name: "Moonshot Kimi K2",
