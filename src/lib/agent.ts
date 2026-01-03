@@ -139,6 +139,9 @@ export async function runAgent({
           step.toolResults?.some((t) => t.toolName === "FinalizePlan")
         )
       ) {
+        if (phase !== "building") {
+          console.log(`[Agent] Phase change: ${phase} -> building`);
+        }
         phase = "building";
       }
       if (
@@ -146,6 +149,9 @@ export async function runAgent({
           step.toolResults?.some((t) => t.toolName === "FinalizeBuild")
         )
       ) {
+        if (phase !== "execution") {
+          console.log(`[Agent] Phase change: ${phase} -> execution`);
+        }
         phase = "execution";
       }
       if (
@@ -153,6 +159,9 @@ export async function runAgent({
           step.toolResults?.some((t) => t.toolName === "ExecuteSQLWithRepair")
         )
       ) {
+        if (phase !== "reporting") {
+          console.log(`[Agent] Phase change: ${phase} -> reporting`);
+        }
         phase = "reporting";
       }
 
