@@ -47,6 +47,13 @@ oss-data-analyst is an intelligent AI agent that converts natural language quest
    ```
    This creates a SQLite database with sample data (Companies, People, Accounts)
 
+   For using PostgreSQL
+   ```bash
+   pnpm tsx scripts/postgres/create-database.ts
+   pnpm tsx scripts/postgres/init-database.ts
+   pnpm tsx scripts/postgres/seed-database.ts
+   ```
+
 5. **Run the development server**
    ```bash
    pnpm dev
