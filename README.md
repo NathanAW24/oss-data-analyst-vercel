@@ -49,9 +49,17 @@ oss-data-analyst is an intelligent AI agent that converts natural language quest
 
    For using PostgreSQL
    ```bash
-   pnpm tsx scripts/postgres/create-database.ts
-   pnpm tsx scripts/postgres/init-database.ts
-   pnpm tsx scripts/postgres/seed-database.ts
+   pnpm pg:setup
+   ```
+   This creates a PostgreSQL database with sample data (Companies, People, Accounts)
+
+   Optional quick Postgres instance via Docker (matches env defaults)
+   ```bash
+   docker run --name pg \
+     -e POSTGRES_PASSWORD=secret \
+     -e POSTGRES_DB=oss_data_analyst \
+     -p 5432:5432 \
+     -d postgres:16
    ```
 
 5. **Run the development server**
@@ -154,8 +162,14 @@ The default setup uses SQLite for demonstration. To use with Snowflake or other 
 ## Troubleshooting
 
 **Database Not Found**
+SQLite
 - Run `pnpm initDatabase` to create and seed the database
 - Check that `data/oss-data-analyst.db` exists
+
+PostgreSQL
+- Make sure environment variables are set properly (`PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`, `PGSSLMODE`) for the proper PostgreSQL database
+- Run `pnpm pg:setup` to create and seed the database
+- Check `pnpm tsx tests/trials/lib/postgresql.ts` to make sure the postgres database is accessible.
 
 **AI Gateway API Errors**
 - Verify your API key is valid in `.env.local`
