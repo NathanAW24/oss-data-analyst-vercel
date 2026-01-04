@@ -69,7 +69,8 @@ import { BUILDING_SPECIALIST_SYSTEM_PROMPT } from "./prompts/building";
 import { EXECUTION_MANAGER_SYSTEM_PROMPT } from "./prompts/execution";
 import { REPORTING_SPECIALIST_SYSTEM_PROMPT } from "./prompts/reporting";
 import { ListEntities } from "./semantic/io";
-import { sqlEvalSet } from "./sample-queries";
+// import { sqlEvalSet } from "./sample-queries";
+import { sqlEvalSet } from "./sample-queries-postgresql";
 interface Message {
   role: "user" | "assistant" | "system";
   content: string;
