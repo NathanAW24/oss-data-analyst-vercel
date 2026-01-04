@@ -6,7 +6,7 @@ import {
   convertToModelMessages,
   streamText,
 } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { createOpenAI } from "@ai-sdk/openai";
 import {
   AssessEntityCoverage,
   ClarifyIntent,
@@ -77,6 +77,16 @@ interface Message {
 }
 export type Phase = "planning" | "building" | "execution" | "reporting";
 
+// Custom OpenAI provider configuration driven by environment variables.
+const subscriptionKey = process.env.OPENAI_API_KEY;
+const customOpenAI = createOpenAI({
+  baseURL: process.env.OPENAI_BASE_URL,
+  apiKey: "dummy", // still set apiKey field
+  headers: subscriptionKey
+    ? { "Ocp-Apim-Subscription-Key": subscriptionKey }
+    : undefined,
+});
+
 export async function runAgent({
   messages,
   prompt,
@@ -90,7 +100,7 @@ export async function runAgent({
   const possibleEntities = await ListEntities();
 
   const result = streamText({
-    model: openai("gpt-5"),
+    model: customOpenAI("gpt-5.1-codex-max"),
     messages: convertToModelMessages(messages),
     providerOptions: {
       openai: {
