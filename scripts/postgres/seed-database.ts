@@ -113,15 +113,16 @@ async function main() {
 
   try {
     await client.query("BEGIN");
+    await client.query(`SET search_path TO main;`);
 
     console.log("🧹 Clearing existing data...");
     await client.query(
-      "TRUNCATE accounts, people, companies RESTART IDENTITY CASCADE"
+      "TRUNCATE main.accounts, main.people, main.companies RESTART IDENTITY CASCADE"
     );
 
     console.log("🏢 Inserting companies...");
     const insertCompany = `
-      INSERT INTO companies (name, industry, employee_count, revenue, founded_year, country, city)
+      INSERT INTO main.companies (name, industry, employee_count, revenue, founded_year, country, city)
       VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING id
     `;
@@ -142,7 +143,7 @@ async function main() {
 
     console.log("👥 Inserting people...");
     const insertPerson = `
-      INSERT INTO people (first_name, last_name, email, company_id, job_title, department, salary, hire_date, birth_date)
+      INSERT INTO main.people (first_name, last_name, email, company_id, job_title, department, salary, hire_date, birth_date)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING id
     `;
@@ -169,7 +170,7 @@ async function main() {
 
     console.log("💼 Inserting accounts...");
     const insertAccount = `
-      INSERT INTO accounts (account_number, company_id, account_manager_id, status, account_type, monthly_value, total_revenue, contract_start_date, contract_end_date)
+      INSERT INTO main.accounts (account_number, company_id, account_manager_id, status, account_type, monthly_value, total_revenue, contract_start_date, contract_end_date)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     `;
 
@@ -207,13 +208,13 @@ async function main() {
 
     const stats = {
       companies: (
-        await client.query("SELECT COUNT(*)::int AS count FROM companies")
+        await client.query("SELECT COUNT(*)::int AS count FROM main.companies")
       ).rows[0].count as number,
       people: (
-        await client.query("SELECT COUNT(*)::int AS count FROM people")
+        await client.query("SELECT COUNT(*)::int AS count FROM main.people")
       ).rows[0].count as number,
       accounts: (
-        await client.query("SELECT COUNT(*)::int AS count FROM accounts")
+        await client.query("SELECT COUNT(*)::int AS count FROM main.accounts")
       ).rows[0].count as number,
     };
 

@@ -14,8 +14,12 @@ async function main() {
   try {
     await client.query("BEGIN");
 
+    // Ensure target schema exists and use it for subsequent objects
+    await client.query(`CREATE SCHEMA IF NOT EXISTS main;`);
+    await client.query(`SET search_path TO main;`);
+
     await client.query(`
-      CREATE TABLE IF NOT EXISTS companies (
+      CREATE TABLE IF NOT EXISTS main.companies (
         id SERIAL PRIMARY KEY,
         name TEXT NOT NULL,
         industry TEXT NOT NULL,
@@ -29,12 +33,12 @@ async function main() {
     `);
 
     await client.query(`
-      CREATE TABLE IF NOT EXISTS people (
+      CREATE TABLE IF NOT EXISTS main.people (
         id SERIAL PRIMARY KEY,
         first_name TEXT NOT NULL,
         last_name TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
-        company_id INTEGER REFERENCES companies(id),
+        company_id INTEGER REFERENCES main.companies(id),
         job_title TEXT,
         department TEXT,
         salary NUMERIC,
@@ -45,11 +49,11 @@ async function main() {
     `);
 
     await client.query(`
-      CREATE TABLE IF NOT EXISTS accounts (
+      CREATE TABLE IF NOT EXISTS main.accounts (
         id SERIAL PRIMARY KEY,
         account_number TEXT UNIQUE NOT NULL,
-        company_id INTEGER REFERENCES companies(id),
-        account_manager_id INTEGER REFERENCES people(id),
+        company_id INTEGER REFERENCES main.companies(id),
+        account_manager_id INTEGER REFERENCES main.people(id),
         status TEXT NOT NULL,
         account_type TEXT NOT NULL,
         monthly_value NUMERIC,
@@ -61,11 +65,11 @@ async function main() {
     `);
 
     await client.query(`
-      CREATE INDEX IF NOT EXISTS idx_people_company_id ON people(company_id);
-      CREATE INDEX IF NOT EXISTS idx_accounts_company_id ON accounts(company_id);
-      CREATE INDEX IF NOT EXISTS idx_accounts_manager_id ON accounts(account_manager_id);
-      CREATE INDEX IF NOT EXISTS idx_people_email ON people(email);
-      CREATE INDEX IF NOT EXISTS idx_accounts_number ON accounts(account_number);
+      CREATE INDEX IF NOT EXISTS idx_people_company_id ON main.people(company_id);
+      CREATE INDEX IF NOT EXISTS idx_accounts_company_id ON main.accounts(company_id);
+      CREATE INDEX IF NOT EXISTS idx_accounts_manager_id ON main.accounts(account_manager_id);
+      CREATE INDEX IF NOT EXISTS idx_people_email ON main.people(email);
+      CREATE INDEX IF NOT EXISTS idx_accounts_number ON main.accounts(account_number);
     `);
 
     await client.query("COMMIT");
