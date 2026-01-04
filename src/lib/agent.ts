@@ -19,7 +19,14 @@ import {
   SearchSchema,
 } from "./tools/planning";
 // Use SQLite building tools for demo/development
-import { BuildSQL, FinalizeBuild, ValidateSQL } from "./tools/building-sqlite";
+// import { BuildSQL, FinalizeBuild, ValidateSQL } from "./tools/building-sqlite";
+
+// Use PostgreSQL building tools
+import {
+  BuildSQL,
+  FinalizeBuild,
+  ValidateSQL,
+} from "./tools/building-postgresql";
 
 // For production Snowflake usage, use:
 // import {
@@ -30,11 +37,18 @@ import { BuildSQL, FinalizeBuild, ValidateSQL } from "./tools/building-sqlite";
 // } from "./tools/building";
 
 // Use SQLite execution tools for demo/development
+// import {
+//   EstimateCost,
+//   ExecuteSQL,
+//   ExecuteSQLWithRepair,
+// } from "./tools/execute-sqlite";
+
+// Use PostgreSQL execution tools
 import {
   EstimateCost,
   ExecuteSQL,
   ExecuteSQLWithRepair,
-} from "./tools/execute-sqlite";
+} from "./tools/execute-postgresql";
 
 // For production Snowflake usage, use:
 // import {
