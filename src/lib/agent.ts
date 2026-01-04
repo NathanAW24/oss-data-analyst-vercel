@@ -80,7 +80,7 @@ export type Phase = "planning" | "building" | "execution" | "reporting";
 export async function runAgent({
   messages,
   prompt,
-  model = "openai/gpt-5",
+  model = "gpt-5",
 }: {
   messages: UIMessage[];
   prompt?: string;
@@ -90,7 +90,7 @@ export async function runAgent({
   const possibleEntities = await ListEntities();
 
   const result = streamText({
-    model,
+    model: openai("gpt-5"),
     messages: convertToModelMessages(messages),
     providerOptions: {
       openai: {
