@@ -3,7 +3,19 @@
 FROM node:23-alpine AS base
 
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
+
+# print /etc/apk/repositories here please
+RUN cat /etc/apk/repositories
+
+
+# COPY libc6-compat/gcompat-1.1.0-r4.apk \
+#      libc6-compat/libucontext-1.3.2-r0.apk \
+#      libc6-compat/musl-obstack-1.2.3-r2.apk \
+#      /tmp/apk/
+# RUN apk add --no-cache --no-network --allow-untrusted /tmp/apk/*.apk \
+#     && rm -rf /tmp/apk
+
+RUN apk add --no-cache --allow-untrusted libc6-compat
 # If you still run into build issue, go to "Problem #3: Making /app is read only.
 # in case you have permission issues.
 WORKDIR /app
