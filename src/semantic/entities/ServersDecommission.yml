@@ -12,17 +12,17 @@ dimensions:
   - name: creation_datetime
     sql: creation_datetime
     type: time
-    description: Timestamp when the record was created
+    description: When the decommission record was created
 
   - name: update_datetime
     sql: update_datetime
     type: time
-    description: Timestamp when the record was last updated
+    description: When the decommission record was last updated
 
   - name: hostname
     sql: hostname
     type: string
-    description: Server hostname
+    description: Hostname of the decommissioned server
 
   - name: reason
     sql: reason

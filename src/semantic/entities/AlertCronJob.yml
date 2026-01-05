@@ -12,17 +12,17 @@ dimensions:
   - name: creation_datetime
     sql: creation_datetime
     type: time
-    description: Timestamp when the record was created
+    description: Time when the cron entry was created
 
   - name: update_datetime
     sql: update_datetime
     type: time
-    description: Timestamp when the record was last updated
+    description: Time when the cron entry was last updated
 
   - name: uuid
     sql: uuid
     type: string
-    description: Unique run identifier
+    description: Unique identifier for the cron run
 
   - name: status
     sql: status

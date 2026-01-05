@@ -12,7 +12,7 @@ dimensions:
   - name: cabinet_id
     sql: cabinet_id
     type: string
-    description: Cabinet identifier
+    description: Cabinet identifier containing the server
 
   - name: server_id
     sql: server_id
@@ -33,7 +33,7 @@ dimensions:
   - name: power_consumed
     sql: power_consumed
     type: number
-    description: Power consumed (kW)
+    description: Power consumed by the server (kW)
 
   - name: network_throughput_mbps
     sql: network_throughput_mbps
@@ -44,7 +44,7 @@ time_dimensions:
   - name: update_datetime
     sql: update_datetime
     type: time
-    description: Timestamp when the record was last updated
+    description: Timestamp of the status update
 
 measures:
   - name: server_count
@@ -55,7 +55,7 @@ measures:
   - name: avg_power_consumed
     sql: power_consumed
     type: avg
-    description: Average power consumption (kW)
+    description: Average server power consumption
 
   - name: avg_network_throughput
     sql: network_throughput_mbps

@@ -12,27 +12,27 @@ dimensions:
   - name: creation_datetime
     sql: creation_datetime
     type: time
-    description: Timestamp when the record was created
+    description: When the endpoint record was created
 
   - name: update_datetime
     sql: update_datetime
     type: time
-    description: Timestamp when the record was last updated
+    description: When the endpoint record was last updated
 
   - name: hostname
     sql: hostname
     type: string
-    description: Server hostname
+    description: Hostname owning the endpoint
 
   - name: server_ip
     sql: server_ip
     type: string
-    description: Server management IP address
+    description: IP address of the server
 
   - name: category_id
     sql: category_id
     type: string
-    description: Redfish endpoint category (e.g., Chassis/Power)
+    description: Endpoint category (e.g., Chassis/Power)
 
   - name: url
     sql: url

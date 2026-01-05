@@ -12,27 +12,27 @@ dimensions:
   - name: creation_datetime
     sql: creation_datetime
     type: time
-    description: Timestamp when the record was created
+    description: When the record was created
 
   - name: update_datetime
     sql: update_datetime
     type: time
-    description: Timestamp when the record was last updated
+    description: When the record was last updated
 
   - name: uuid
     sql: uuid
     type: string
-    description: Unique run identifier
+    description: Identifier of the cron run that produced the evaluation
 
   - name: data_center
     sql: data_center
     type: string
-    description: Data center code
+    description: Data center code evaluated by the rule
 
   - name: rule_id
     sql: rule_id
     type: number
-    description: Unique rule identifier
+    description: Rule identifier
 
   - name: target
     sql: target

@@ -47,12 +47,12 @@ dimensions:
   - name: row
     sql: row
     type: string
-    description: Row name
+    description: Row name or label
 
   - name: row_id
     sql: row_id
     type: number
-    description: Row identifier
+    description: Identifier for the row
 
   - name: cabinet
     sql: cabinet
@@ -62,7 +62,7 @@ dimensions:
   - name: cabinet_id
     sql: cabinet_id
     type: number
-    description: Cabinet identifier
+    description: Identifier for the cabinet
 
   - name: device_id
     sql: device_id
@@ -127,7 +127,7 @@ dimensions:
   - name: region
     sql: region
     type: string
-    description: Region name
+    description: Region containing the device
 
   - name: country
     sql: country
@@ -182,12 +182,6 @@ measures:
     description: Sum of nominal watts allocated in cabinets
 
 joins:
-  - target_entity: EventMetrics
-    relationship: one_to_many
-    join_columns:
-      from: device_label
-      to: hostname
-
   - target_entity: RegionDataCenterMapping
     relationship: many_to_one
     join_columns:
@@ -195,7 +189,7 @@ joins:
       to: data_center
 
   - target_entity: CabinetStatus
-    relationship: one_to_many
+    relationship: many_to_one
     join_columns:
-      from: row_id
-      to: row
+      from: data_center
+      to: data_center

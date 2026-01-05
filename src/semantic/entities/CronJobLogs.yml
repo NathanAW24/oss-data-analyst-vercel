@@ -12,22 +12,22 @@ dimensions:
   - name: id
     sql: id
     type: number
-    description: Unique record identifier
+    description: Unique log entry identifier
 
   - name: run_id
     sql: run_id
     type: string
-    description: Unique cron run identifier
+    description: Identifier of the cron run
 
   - name: hostname
     sql: hostname
     type: string
-    description: Server hostname
+    description: Hostname polled during the run
 
   - name: category_id
     sql: category_id
     type: string
-    description: Redfish endpoint category (e.g., Chassis/Power)
+    description: Category of Redfish endpoint polled
 
   - name: success
     sql: success
@@ -62,12 +62,6 @@ measures:
     description: Number of successful polls
 
 joins:
-  - target_entity: EventMetrics
-    relationship: one_to_many
-    join_columns:
-      from: host_uuid
-      to: uuid
-
   - target_entity: CronJobRunningHistory
     relationship: many_to_one
     join_columns:

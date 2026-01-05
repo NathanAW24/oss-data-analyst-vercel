@@ -12,7 +12,7 @@ dimensions:
   - name: run_id
     sql: run_id
     type: string
-    description: Unique cron run identifier
+    description: Unique identifier for the run
 
   - name: schedule
     sql: schedule

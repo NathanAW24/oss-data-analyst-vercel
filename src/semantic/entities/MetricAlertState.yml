@@ -12,7 +12,7 @@ dimensions:
   - name: msg_key
     sql: msg_key
     type: string
-    description: Message key for the alert state
+    description: Unique message key for the alert state
 
   - name: device_label
     sql: device_label

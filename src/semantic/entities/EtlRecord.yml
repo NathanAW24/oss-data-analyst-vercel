@@ -22,7 +22,7 @@ dimensions:
   - name: uuid
     sql: uuid
     type: string
-    description: Unique run identifier
+    description: UUID associated with the import
 
   - name: filelines_inserted
     sql: filelines_inserted
@@ -37,7 +37,7 @@ dimensions:
   - name: hostname
     sql: hostname
     type: string
-    description: Server hostname
+    description: Hostname that generated the import
 
 measures:
   - name: import_count

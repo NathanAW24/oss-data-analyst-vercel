@@ -12,7 +12,7 @@ dimensions:
   - name: id
     sql: id
     type: number
-    description: Unique record identifier
+    description: Unique alert identifier
 
   - name: device_label
     sql: device_label
@@ -27,17 +27,17 @@ dimensions:
   - name: severity
     sql: severity
     type: number
-    description: Severity level
+    description: Alert severity level
 
   - name: prom_value
     sql: prom_value
     type: number
-    description: Observed metric value at event time
+    description: Observed metric value at alert time
 
   - name: threshold
     sql: threshold
     type: number
-    description: Threshold value for the metric
+    description: Threshold value that triggered the alert
 
 time_dimensions:
   - name: alert_time

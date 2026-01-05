@@ -12,12 +12,12 @@ dimensions:
   - name: creation_datetime
     sql: creation_datetime
     type: time
-    description: Timestamp when the record was created
+    description: When the server record was created
 
   - name: update_datetime
     sql: update_datetime
     type: time
-    description: Timestamp when the record was last updated
+    description: When the server record was last updated
 
   - name: server_sku
     sql: server_sku
@@ -32,7 +32,7 @@ dimensions:
   - name: server_ip
     sql: server_ip
     type: string
-    description: Server management IP address
+    description: Management IP address
 
   - name: redfish_version
     sql: redfish_version

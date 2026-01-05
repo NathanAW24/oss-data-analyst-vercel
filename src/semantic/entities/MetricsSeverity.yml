@@ -17,7 +17,7 @@ dimensions:
   - name: metrics
     sql: metrics
     type: string
-    description: Metric path or identifier
+    description: Metric path configured for severity
 
   - name: threshold
     sql: threshold
@@ -27,7 +27,7 @@ dimensions:
   - name: severity
     sql: severity
     type: number
-    description: Severity level
+    description: Configured severity level
 
 measures:
   - name: metric_count

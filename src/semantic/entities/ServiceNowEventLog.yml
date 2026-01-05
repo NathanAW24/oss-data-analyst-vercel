@@ -12,12 +12,12 @@ dimensions:
   - name: id
     sql: id
     type: number
-    description: Unique record identifier
+    description: Unique event log identifier
 
   - name: msg_key
     sql: msg_key
     type: string
-    description: Message key for the alert state
+    description: Message key tying to alert states
 
   - name: device_label
     sql: device_label
@@ -27,22 +27,22 @@ dimensions:
   - name: metric
     sql: metric
     type: string
-    description: Metric path or identifier
+    description: Metric associated with the event
 
   - name: severity
     sql: severity
     type: number
-    description: Severity level
+    description: Severity level sent to ServiceNow
 
   - name: prom_value
     sql: prom_value
     type: number
-    description: Observed metric value at event time
+    description: Metric value at event time
 
   - name: threshold
     sql: threshold
     type: number
-    description: Threshold value for the metric
+    description: Threshold associated with the event
 
   - name: payload
     sql: payload
