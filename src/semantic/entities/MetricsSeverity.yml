@@ -1,0 +1,49 @@
+name: MetricsSeverity
+type: dimension_table
+table: opendcim.metrics_severity
+grain: one row per device metric severity threshold
+description: Configured thresholds and severities for each device metric.
+common_questions:
+  - What thresholds apply to Systems/Memory.Memory per device?
+  - Which devices use severity level 3?
+  - How do thresholds differ between power and thermal metrics?
+
+dimensions:
+  - name: device_label
+    sql: device_label
+    type: string
+    description: Device hostname or label
+
+  - name: metrics
+    sql: metrics
+    type: string
+    description: Metric path or identifier
+
+  - name: threshold
+    sql: threshold
+    type: number
+    description: Threshold value for the metric
+
+  - name: severity
+    sql: severity
+    type: number
+    description: Severity level
+
+measures:
+  - name: metric_count
+    sql: metrics
+    type: count
+    description: Count of metric threshold entries
+
+joins:
+  - target_entity: MetricAlerts
+    relationship: one_to_many
+    join_columns:
+      from: metrics
+      to: metric
+
+  - target_entity: MetricAlertState
+    relationship: one_to_many
+    join_columns:
+      from: metrics
+      to: metric

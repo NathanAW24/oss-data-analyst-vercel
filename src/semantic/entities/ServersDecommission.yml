@@ -1,0 +1,43 @@
+name: ServersDecommission
+type: fact_table
+table: redfishdb.servers_decommission
+grain: one row per decommissioned server
+description: Decommissioned servers with reasons and timestamps.
+common_questions:
+  - Which hosts were decommissioned for Redfish incompatibility?
+  - When was a specific host retired?
+  - What reasons are most common for decommissioning?
+
+dimensions:
+  - name: creation_datetime
+    sql: creation_datetime
+    type: time
+    description: Timestamp when the record was created
+
+  - name: update_datetime
+    sql: update_datetime
+    type: time
+    description: Timestamp when the record was last updated
+
+  - name: hostname
+    sql: hostname
+    type: string
+    description: Server hostname
+
+  - name: reason
+    sql: reason
+    type: string
+    description: Reason for decommissioning
+
+measures:
+  - name: decommission_count
+    sql: hostname
+    type: count_distinct
+    description: Count of decommissioned servers
+
+joins:
+  - target_entity: Servers
+    relationship: many_to_one
+    join_columns:
+      from: hostname
+      to: hostname

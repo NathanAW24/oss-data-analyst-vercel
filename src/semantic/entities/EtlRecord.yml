@@ -1,0 +1,58 @@
+name: EtlRecord
+type: fact_table
+table: redfishdb.etl_record
+grain: one row per ETL file import
+description: Records of ETL imports including filename, UUID, inserted lines, status, and source host.
+common_questions:
+  - Which ETL imports failed or are missing?
+  - How many lines were inserted per import file?
+  - Which hosts produced the latest ETL uploads?
+
+dimensions:
+  - name: etl_process_datetime
+    sql: etl_process_datetime
+    type: time
+    description: Timestamp when the ETL process ran
+
+  - name: import_filename
+    sql: import_filename
+    type: string
+    description: Name of the imported file
+
+  - name: uuid
+    sql: uuid
+    type: string
+    description: Unique run identifier
+
+  - name: filelines_inserted
+    sql: filelines_inserted
+    type: number
+    description: Number of lines inserted from the file
+
+  - name: status
+    sql: status
+    type: string
+    description: ETL status (e.g., PASSED)
+
+  - name: hostname
+    sql: hostname
+    type: string
+    description: Server hostname
+
+measures:
+  - name: import_count
+    sql: uuid
+    type: count_distinct
+    description: Count of ETL imports
+
+  - name: total_lines_inserted
+    sql: filelines_inserted
+    type: sum
+    description: Total lines inserted across imports
+
+joins:
+  - target_entity: Servers
+    relationship: many_to_one
+    join_columns:
+      from: hostname
+      to: hostname

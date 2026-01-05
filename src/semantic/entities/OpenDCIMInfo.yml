@@ -1,0 +1,201 @@
+name: OpenDCIMInfo
+type: fact_table
+table: opendcim.opendcim_info
+grain: one row per device inventory record
+description: Detailed inventory of devices including location, cabinet utilization, power, region, and Redfish enablement.
+common_questions:
+  - Which devices in a data center are Redfish enabled?
+  - How much cabinet height remains for a given row?
+  - What is the nominal wattage across devices in a cabinet?
+
+dimensions:
+  - name: device_label
+    sql: device_label
+    type: string
+    description: Device hostname or label
+
+  - name: container
+    sql: container
+    type: string
+    description: Container name for the device
+
+  - name: container_id
+    sql: container_id
+    type: number
+    description: Identifier for the container
+
+  - name: data_center
+    sql: data_center
+    type: string
+    description: Data center code
+
+  - name: data_center_id
+    sql: data_center_id
+    type: number
+    description: Identifier for the data center
+
+  - name: zone
+    sql: zone
+    type: string
+    description: Zone name within the data center
+
+  - name: zone_id
+    sql: zone_id
+    type: number
+    description: Identifier for the zone
+
+  - name: row
+    sql: row
+    type: string
+    description: Row name
+
+  - name: row_id
+    sql: row_id
+    type: number
+    description: Row identifier
+
+  - name: cabinet
+    sql: cabinet
+    type: string
+    description: Cabinet name or label
+
+  - name: cabinet_id
+    sql: cabinet_id
+    type: number
+    description: Cabinet identifier
+
+  - name: device_id
+    sql: device_id
+    type: number
+    description: Device identifier
+
+  - name: chassis_id
+    sql: chassis_id
+    type: string
+    description: Chassis identifier, if applicable
+
+  - name: device_height
+    sql: device_height
+    type: number
+    description: Device height in rack units (RU)
+
+  - name: device_nominal_watts
+    sql: device_nominal_watts
+    type: number
+    description: Nominal power draw of the device in watts
+
+  - name: chassis_total_slots
+    sql: chassis_total_slots
+    type: number
+    description: Total slots available in the chassis
+
+  - name: chassis_occupied_slots
+    sql: chassis_occupied_slots
+    type: number
+    description: Slots currently occupied in the chassis
+
+  - name: chassis_remaining_slots
+    sql: chassis_remaining_slots
+    type: number
+    description: Remaining slots in the chassis
+
+  - name: cabinet_max_height
+    sql: cabinet_max_height
+    type: number
+    description: Maximum rack height of the cabinet (RU)
+
+  - name: cabinet_occupied_height
+    sql: cabinet_occupied_height
+    type: number
+    description: Occupied rack height within the cabinet (RU)
+
+  - name: cabinet_remaining_height
+    sql: cabinet_remaining_height
+    type: number
+    description: Remaining rack height within the cabinet (RU)
+
+  - name: cabinet_max_watts
+    sql: cabinet_max_watts
+    type: number
+    description: Maximum allowable watts for the cabinet
+
+  - name: cabinet_nominal_watts
+    sql: cabinet_nominal_watts
+    type: number
+    description: Nominal watts currently allocated in the cabinet
+
+  - name: region
+    sql: region
+    type: string
+    description: Region name
+
+  - name: country
+    sql: country
+    type: string
+    description: Country of the data center
+
+  - name: state
+    sql: state
+    type: string
+    description: State or province of the data center
+
+  - name: dc_type
+    sql: dc_type
+    type: string
+    description: Data center type classification
+
+  - name: colocation_vendor
+    sql: colocation_vendor
+    type: string
+    description: Colocation vendor, if applicable
+
+  - name: chassis
+    sql: chassis
+    type: string
+    description: Chassis name or label
+
+  - name: dcim_status
+    sql: dcim_status
+    type: string
+    description: DCIM status (e.g., Production)
+
+  - name: redfish_enabled
+    sql: redfish_enabled
+    type: string
+    description: Indicates if Redfish is enabled for the device
+    sample_values: [on, off]
+
+measures:
+  - name: device_count
+    sql: device_label
+    type: count_distinct
+    description: Count of devices in inventory
+
+  - name: total_device_nominal_watts
+    sql: device_nominal_watts
+    type: sum
+    description: Sum of nominal watts across devices
+
+  - name: total_cabinet_nominal_watts
+    sql: cabinet_nominal_watts
+    type: sum
+    description: Sum of nominal watts allocated in cabinets
+
+joins:
+  - target_entity: EventMetrics
+    relationship: one_to_many
+    join_columns:
+      from: device_label
+      to: hostname
+
+  - target_entity: RegionDataCenterMapping
+    relationship: many_to_one
+    join_columns:
+      from: data_center
+      to: data_center
+
+  - target_entity: CabinetStatus
+    relationship: one_to_many
+    join_columns:
+      from: row_id
+      to: row

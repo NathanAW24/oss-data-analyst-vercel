@@ -1,0 +1,43 @@
+name: Locations
+type: dimension_table
+table: opendcim.locations
+grain: one row per data center location
+description: Geographic coordinates and region for each data center.
+common_questions:
+  - Where are data centers located by region?
+  - What are the coordinates for APAC data centers?
+  - Which data centers belong to a specific region?
+
+dimensions:
+  - name: region
+    sql: region
+    type: string
+    description: Region name
+
+  - name: data_center
+    sql: data_center
+    type: string
+    description: Data center code
+
+  - name: latitude
+    sql: latitude
+    type: number
+    description: Latitude of the data center
+
+  - name: longitude
+    sql: longitude
+    type: number
+    description: Longitude of the data center
+
+measures:
+  - name: data_center_count
+    sql: data_center
+    type: count_distinct
+    description: Count of data centers
+
+joins:
+  - target_entity: RegionDataCenterMapping
+    relationship: one_to_many
+    join_columns:
+      from: data_center
+      to: data_center
