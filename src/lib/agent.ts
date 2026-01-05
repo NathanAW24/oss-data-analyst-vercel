@@ -87,6 +87,8 @@ const customOpenAI = createOpenAI({
     : undefined,
 });
 
+const shouldLogStepIO = process.env.AGENT_LOG_STEP_IO === "1";
+
 export async function runAgent({
   messages,
   prompt,
@@ -98,6 +100,7 @@ export async function runAgent({
 }) {
   let phase: Phase = "planning";
   const possibleEntities = await ListEntities();
+  let stepIndex = 0;
 
   const result = streamText({
     model: customOpenAI("gpt-5.1-codex"),
@@ -141,9 +144,26 @@ export async function runAgent({
         ),
       stepCountIs(100),
     ],
-    onStepFinish: ({ text, toolCalls }) => {
+    onStepFinish: (stepResult) => {
+      stepIndex += 1;
+      if (shouldLogStepIO) {
+        console.log(`[Agent] Step ${stepIndex} input`, {
+          requestBody: stepResult.request.body ?? null,
+        });
+        console.log(`[Agent] Step ${stepIndex} output`, {
+          text: stepResult.text,
+          reasoningText: stepResult.reasoningText,
+          toolCalls: stepResult.toolCalls,
+          toolResults: stepResult.toolResults,
+          responseMessages: stepResult.response.messages,
+          responseBody: stepResult.response.body ?? null,
+          finishReason: stepResult.finishReason,
+          usage: stepResult.usage,
+          warnings: stepResult.warnings,
+        });
+      }
       console.log(
-        `[Agent] Completed step ${text}: ${toolCalls
+        `[Agent] Completed step ${stepResult.text}: ${stepResult.toolCalls
           .map((t) => t.toolName)
           .join(", ")}`
       );
