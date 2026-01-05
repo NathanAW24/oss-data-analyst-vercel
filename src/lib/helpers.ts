@@ -14,7 +14,7 @@ const customOpenAI = createOpenAI({
 
 export const extractSQLFromText = async (text: string): Promise<string> => {
   const { object } = await generateObject({
-    model: customOpenAI("gpt-5.1-codex-max"),
+    model: customOpenAI("gpt-5.1-codex"),
     messages: [
       {
         role: "system",

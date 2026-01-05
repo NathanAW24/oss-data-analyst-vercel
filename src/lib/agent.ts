@@ -100,7 +100,7 @@ export async function runAgent({
   const possibleEntities = await ListEntities();
 
   const result = streamText({
-    model: customOpenAI("gpt-5.1-codex-max"),
+    model: customOpenAI("gpt-5.1-codex"),
     messages: convertToModelMessages(messages),
     providerOptions: {
       openai: {
