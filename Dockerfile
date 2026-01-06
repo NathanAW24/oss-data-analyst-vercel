@@ -15,6 +15,17 @@ RUN cat /etc/apk/repositories
 # RUN apk add --no-cache --no-network --allow-untrusted /tmp/apk/*.apk \
 #     && rm -rf /tmp/apk
 
+RUN apk add --no-cache \
+  python3 \
+  make \
+  g++ \
+  cairo-dev \
+  pango-dev \
+  jpeg-dev \
+  giflib-dev \
+  librsvg-dev \
+  pixman-dev
+
 RUN apk add --no-cache --allow-untrusted libc6-compat
 # If you still run into build issue, go to "Problem #3: Making /app is read only.
 # in case you have permission issues.
