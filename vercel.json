@@ -3,5 +3,10 @@
     "src/app/api/slack/events/route.ts": {
       "maxDuration": 800
     }
+  },
+  "build": {
+    "env": {
+      "NODE_VERSION": "20"
+    }
   }
 }

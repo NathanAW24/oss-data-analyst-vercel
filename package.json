@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": false,
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0 <21.0.0"
+  },
   "description": "An open-source AI data science agent that converts natural language to SQL queries and provides intelligent data analysis",
   "keywords": [
     "ai",
