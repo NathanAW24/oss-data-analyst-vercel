@@ -1,6 +1,6 @@
 
 # Make sure it uses up to date node js version
-FROM node:23-alpine AS base
+FROM node:20-alpine AS base
 
 FROM base AS deps
 
