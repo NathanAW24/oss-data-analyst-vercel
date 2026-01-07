@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bes-oss-data-analyst-vercel
+  namespace: aidc-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bes-oss-data-analyst-vercel
+  template:
+    metadata:
+      labels:
+        app: bes-oss-data-analyst-vercel
+    spec:
+      containers:
+      - name: bes-oss-data-analyst-vercel # must change
+        image: evuedsoacr.azurecr.io/bes-app/bes-oss-data-analyst-vercel:latest # must change
+        env:
+          - name: DATABASE_CONNECTION
+            valueFrom:
+              secretKeyRef:
+                name: fixed-aidc-postgres-mcp-secrets
+                key: DATABASE_CONNECTION
+        ports:
+          - containerPort: 3000
+        resources:
+          requests:
+            memory: "200Mi"   # Guaranteed memory allocation
+            cpu: "500m"     # Guaranteed CPU allocation
+          limits:
+            memory: "500Mi"   # Maximum memory the container can use
+            cpu: "500m"    # Maximum CPU the container can use
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+              - ALL
+          seccompProfile:
+            type: RuntimeDefault
+      imagePullSecrets:
+        - name: acr-registry-secret
