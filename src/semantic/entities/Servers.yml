@@ -1,0 +1,108 @@
+name: Servers
+type: fact_table
+table: redfishdb.servers
+grain: one row per active server
+description: Active Redfish-managed servers with model, vendor, serial, IP, polling frequency, and activation flag.
+common_questions:
+  - Which servers are active and polled every 20 minutes?
+  - What vendor and model combinations exist across hosts?
+  - Which hostnames correspond to specific SKUs?
+
+dimensions:
+  - name: creation_datetime
+    sql: creation_datetime
+    type: time
+    description: Timestamp when the record was created
+
+  - name: update_datetime
+    sql: update_datetime
+    type: time
+    description: Timestamp when the record was last updated
+
+  - name: server_sku
+    sql: server_sku
+    type: string
+    description: Server SKU identifier
+
+  - name: hostname
+    sql: hostname
+    type: string
+    description: Server hostname
+
+  - name: server_ip
+    sql: server_ip
+    type: string
+    description: Server management IP address
+
+  - name: redfish_version
+    sql: redfish_version
+    type: string
+    description: Redfish version reported by the server
+
+  - name: frequency
+    sql: frequency
+    type: string
+    description: Polling frequency for telemetry collection
+
+  - name: active
+    sql: active = 'Y'
+    type: boolean
+    description: Indicates if the server is active for polling
+
+  - name: vendor
+    sql: vendor
+    type: string
+    description: Hardware vendor
+
+  - name: server_model
+    sql: server_model
+    type: string
+    description: Hardware model
+
+  - name: server_serial
+    sql: server_serial
+    type: string
+    description: Serial number of the server
+
+measures:
+  - name: server_count
+    sql: hostname
+    type: count_distinct
+    description: Count of servers
+
+joins:
+  - target_entity: ServersEndpoints
+    relationship: one_to_many
+    join_columns:
+      from: hostname
+      to: hostname
+
+  - target_entity: ServersMcMap
+    relationship: one_to_many
+    join_columns:
+      from: hostname
+      to: hostname
+
+  - target_entity: ServersDecommission
+    relationship: one_to_one
+    join_columns:
+      from: hostname
+      to: hostname
+
+  - target_entity: CronJobLogs
+    relationship: one_to_many
+    join_columns:
+      from: hostname
+      to: hostname
+
+  - target_entity: EventMetrics
+    relationship: one_to_many
+    join_columns:
+      from: hostname
+      to: hostname
+
+  - target_entity: EtlRecord
+    relationship: one_to_many
+    join_columns:
+      from: hostname
+      to: hostname

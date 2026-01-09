@@ -1,0 +1,59 @@
+name: AlertRules
+type: dimension_table
+table: redfishdb.alert_rules
+grain: one row per alert rule definition
+description: Definitions of alert rules with severity and evaluation frequency.
+common_questions:
+  - What conditions does each rule enforce?
+  - Which rules are Critical versus Warning?
+  - How often does a given rule run?
+
+dimensions:
+  - name: creation_datetime
+    sql: creation_datetime
+    type: time
+    description: Timestamp when the record was created
+
+  - name: update_datetime
+    sql: update_datetime
+    type: time
+    description: Timestamp when the record was last updated
+
+  - name: rule_id
+    sql: rule_id
+    type: number
+    description: Unique rule identifier
+
+  - name: rule_details
+    sql: rule_details
+    type: string
+    description: Description of the rule condition
+
+  - name: severity
+    sql: severity
+    type: string
+    description: Severity level
+
+  - name: frequency
+    sql: frequency
+    type: string
+    description: How often the rule is evaluated
+
+measures:
+  - name: rule_count
+    sql: rule_id
+    type: count_distinct
+    description: Count of alert rules
+
+joins:
+  - target_entity: AlertMetrics
+    relationship: one_to_many
+    join_columns:
+      from: rule_id
+      to: rule_id
+
+  - target_entity: AlertMetricsHistory
+    relationship: one_to_many
+    join_columns:
+      from: rule_id
+      to: rule_id

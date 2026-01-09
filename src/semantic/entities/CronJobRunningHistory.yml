@@ -1,0 +1,49 @@
+name: CronJobRunningHistory
+type: fact_table
+table: redfishdb.cron_job_running_history
+grain: one row per cron job run
+description: Runtime history for scheduled cron jobs including schedule, duration, and status.
+common_questions:
+  - Which cron runs are still in RUNNING status?
+  - What schedules are experiencing the longest durations?
+  - How many successful runs occurred today?
+
+dimensions:
+  - name: run_id
+    sql: run_id
+    type: string
+    description: Unique cron run identifier
+
+  - name: schedule
+    sql: schedule
+    type: string
+    description: Cron schedule definition
+
+  - name: status
+    sql: status
+    type: string
+    description: Run status (e.g., SUCCESS, RUNNING)
+
+time_dimensions:
+  - name: start_time
+    sql: start_time
+    type: time
+    description: Run start timestamp
+
+  - name: end_time
+    sql: end_time
+    type: time
+    description: Run end timestamp, if completed
+
+measures:
+  - name: run_count
+    sql: run_id
+    type: count_distinct
+    description: Count of cron runs
+
+joins:
+  - target_entity: CronJobLogs
+    relationship: one_to_many
+    join_columns:
+      from: run_id
+      to: run_id

@@ -1,0 +1,49 @@
+name: HierarchyNode
+type: dimension_table
+table: opendcim.hierarchy_node
+grain: one row per hierarchy node
+description: Hierarchical nodes representing containers, data centers, labs, and colocations.
+common_questions:
+  - What is the parent of a given node?
+  - Which datacenter nodes exist under AMD containers?
+  - How many child nodes sit under each container?
+
+dimensions:
+  - name: node_id
+    sql: node_id
+    type: number
+    description: Unique hierarchy node identifier
+
+  - name: original_id
+    sql: original_id
+    type: number
+    description: Source identifier for the node
+
+  - name: name
+    sql: name
+    type: string
+    description: Node name
+
+  - name: type
+    sql: type
+    type: string
+    description: Node type (e.g., container, datacenter)
+    sample_values: [container, datacenter, lab]
+
+  - name: parent_id
+    sql: parent_id
+    type: number
+    description: Identifier of the parent node
+
+measures:
+  - name: node_count
+    sql: node_id
+    type: count_distinct
+    description: Count of hierarchy nodes
+
+joins:
+  - target_entity: HierarchyNode
+    relationship: many_to_one
+    join_columns:
+      from: parent_id
+      to: node_id
