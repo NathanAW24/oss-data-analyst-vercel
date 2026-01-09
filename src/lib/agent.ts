@@ -11,6 +11,19 @@ import { ExecuteSQL } from "./tools/execute-sqlite";
 // import { ExecuteSQL } from "./tools/execute-postgresql";
 import { createSemanticSandbox } from "./tools/sandbox";
 import { createExecuteCommandTool } from "./tools/shell";
+import { createOpenAI } from "@ai-sdk/openai";
+
+
+// Custom OpenAI provider configuration driven by environment variables.
+const subscriptionKey = process.env.OPENAI_API_KEY;
+const customOpenAI = createOpenAI({
+  baseURL: process.env.OPENAI_BASE_URL,
+  apiKey: "dummy", // still set apiKey field
+  headers: subscriptionKey
+    ? { "Ocp-Apim-Subscription-Key": subscriptionKey }
+    : undefined,
+});
+
 
 const FinalizeReportSchema = z.object({
   sql: z.string(),
@@ -79,7 +92,7 @@ export async function runAgent({
   const { sandbox, stop } = await createSemanticSandbox();
 
   const result = streamText({
-    model,
+    model: customOpenAI("gpt-5.1-codex-max"),
     system: SYSTEM_PROMPT,
     messages: convertToModelMessages(messages),
     stopWhen: [
@@ -116,7 +129,7 @@ export async function runAgentWithSandbox({
   const { sandbox, stop } = await createSemanticSandbox();
 
   const result = streamText({
-    model,
+    model: customOpenAI("gpt-5.1-codex-max"),
     system: SYSTEM_PROMPT,
     messages: convertToModelMessages(messages),
     stopWhen: [
