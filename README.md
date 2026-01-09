@@ -69,11 +69,37 @@ Add your Vercel AI Gateway key to `.env.local`.
 
 ### Initialize Database
 
+#### Using SQLite
+
 ```bash
 pnpm initDatabase
 ```
 
 Creates a SQLite database with sample data (Companies, People, Accounts).
+
+
+#### Using PostgreSQL
+
+Optional quickstart for local development, create PostgreSQL instance via Docker (matches env defaults).
+
+```bash
+docker run --name oss_data_analyst_pg \
+     -e POSTGRES_PASSWORD=secret \
+     -e POSTGRES_DB=oss_data_analyst \
+     -p 5432:5432 \
+     -d postgres:16
+```
+
+You may use your own way of provisioning a PostgreSQL datbabase as well.
+
+Then, run the script below.
+
+```bash
+pnpm pg:setup
+```
+
+This creates a PostgreSQL database with sample data (Companies, People, Accounts)
+
 
 ### Run
 

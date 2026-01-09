@@ -40,7 +40,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
-    "initDatabase": "mkdir -p data && tsx scripts/init-database.ts && tsx scripts/seed-database.ts"
+    "initDatabase": "mkdir -p data && tsx scripts/init-database.ts && tsx scripts/seed-database.ts",
+    "pg:setup": "tsx scripts/postgresql/create-database.ts && tsx scripts/postgresql/init-database.ts && tsx scripts/postgresql/seed-database.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.42",
