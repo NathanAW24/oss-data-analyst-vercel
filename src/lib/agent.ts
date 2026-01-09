@@ -8,6 +8,7 @@ import {
 } from "ai";
 import z from "zod";
 import { ExecuteSQL } from "./tools/execute-sqlite";
+// import { ExecuteSQL } from "./tools/execute-postgresql";
 import { createSemanticSandbox } from "./tools/sandbox";
 import { createExecuteCommandTool } from "./tools/shell";
 
