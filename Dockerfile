@@ -1,32 +1,33 @@
 
 # Make sure it uses up to date node js version
-FROM node:20-alpine AS base
+FROM ubuntu:22.04 AS base
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  ca-certificates \
+  curl \
+  gnupg \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+  && apt-get update && apt-get install -y --no-install-recommends nodejs \
+  && corepack enable \
+  && rm -rf /var/lib/apt/lists/*
 
 FROM base AS deps
 
-# print /etc/apk/repositories here please
-RUN cat /etc/apk/repositories
-
-
-# COPY libc6-compat/gcompat-1.1.0-r4.apk \
-#      libc6-compat/libucontext-1.3.2-r0.apk \
-#      libc6-compat/musl-obstack-1.2.3-r2.apk \
-#      /tmp/apk/
-# RUN apk add --no-cache --no-network --allow-untrusted /tmp/apk/*.apk \
-#     && rm -rf /tmp/apk
-
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y --no-install-recommends \
   python3 \
   make \
   g++ \
-  cairo-dev \
-  pango-dev \
-  jpeg-dev \
-  giflib-dev \
-  librsvg-dev \
-  pixman-dev
-
-RUN apk add --no-cache --allow-untrusted libc6-compat
+  pkg-config \
+  libcairo2-dev \
+  libpango1.0-dev \
+  libjpeg-dev \
+  libgif-dev \
+  librsvg2-dev \
+  && rm -rf /var/lib/apt/lists/*
 # If you still run into build issue, go to "Problem #3: Making /app is read only.
 # in case you have permission issues.
 WORKDIR /app
@@ -63,8 +64,16 @@ ENV NODE_ENV=production
 # ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_PRIVATE_STANDALONE=true
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  libcairo2 \
+  libpango-1.0-0 \
+  libjpeg-turbo8 \
+  libgif7 \
+  librsvg2-2 \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd --system --gid 1001 nodejs
+RUN useradd --system --uid 1001 --no-log-init -g nodejs nextjs
 
 COPY --from=builder /app/public ./public
 
