@@ -20,62 +20,62 @@ spec:
           - name: NEXT_PUBLIC_API_URL
             valueFrom:
               secretKeyRef:
-                name: next-public-api-url
+                name: bes-oss-data-analyst-vercel-secrets
                 key: NEXT_PUBLIC_API_URL
           - name: NODE_ENV
             valueFrom:
               secretKeyRef:
-                name: node-env
+                name: bes-oss-data-analyst-vercel-secrets
                 key: NODE_ENV
           - name: OPENAI_BASE_URL
             valueFrom:
               secretKeyRef:
-                name: openai-base-url
+                name: bes-oss-data-analyst-vercel-secrets
                 key: OPENAI_BASE_URL
           - name: OPENAI_API_KEY
             valueFrom:
               secretKeyRef:
-                name: openai-api-key
+                name: bes-oss-data-analyst-vercel-secrets
                 key: OPENAI_API_KEY
           - name: PGHOST
             valueFrom:
               secretKeyRef:
-                name: pghost
+                name: bes-oss-data-analyst-vercel-secrets
                 key: PGHOST
           - name: PGPORT
             valueFrom:
               secretKeyRef:
-                name: pgport
+                name: bes-oss-data-analyst-vercel-secrets
                 key: PGPORT
           - name: PGUSER
             valueFrom:
               secretKeyRef:
-                name: pguser
+                name: bes-oss-data-analyst-vercel-secrets
                 key: PGUSER
           - name: PGPASSWORD
             valueFrom:
               secretKeyRef:
-                name: pgpassword
+                name: bes-oss-data-analyst-vercel-secrets
                 key: PGPASSWORD
           - name: PGDATABASE
             valueFrom:
               secretKeyRef:
-                name: pgdatabase
+                name: bes-oss-data-analyst-vercel-secrets
                 key: PGDATABASE
           - name: PGSSLMODE
             valueFrom:
               secretKeyRef:
-                name: pgsslmode
+                name: bes-oss-data-analyst-vercel-secrets
                 key: PGSSLMODE
           - name: ALLOWED_SCHEMAS
             valueFrom:
               secretKeyRef:
-                name: allowed-schemas
+                name: bes-oss-data-analyst-vercel-secrets
                 key: ALLOWED_SCHEMAS
           - name: LOCAL_NO_SANDBOX
             valueFrom:
               secretKeyRef:
-                name: local-no-sandbox
+                name: bes-oss-data-analyst-vercel-secrets
                 key: LOCAL_NO_SANDBOX
         ports:
           - containerPort: 3000
