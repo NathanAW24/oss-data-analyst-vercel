@@ -6,9 +6,9 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 60055 # must change
+  - port: 60061 # must change
     targetPort: 3000 # must be same as deployment containerPort
-    nodePort: 31362 # must change
+    nodePort: 31364 # must change
     protocol: TCP
     name: http
   selector:

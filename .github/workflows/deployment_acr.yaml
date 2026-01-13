@@ -11,7 +11,7 @@ jobs:
   deploy:
     uses: AMD-IT/bes-github_ci-pipeline/.github/workflows/on-prem-k8s-acr-ci-template.yml@on-prem
     with:
-      ACR_REPOSITORY: bes-app/bes-aidc-postgres-mcp
+      ACR_REPOSITORY: bes-app/bes-oss-data-analyst-vercel
       DEPLOYMENT_FILE: k8s/deployment.yaml
       SERVICE_FILE: k8s/service.yaml
       

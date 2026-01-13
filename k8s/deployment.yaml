@@ -17,11 +17,66 @@ spec:
       - name: bes-oss-data-analyst-vercel # must change
         image: evuedsoacr.azurecr.io/bes-app/bes-oss-data-analyst-vercel:latest # must change
         env:
-          - name: DATABASE_CONNECTION
+          - name: NEXT_PUBLIC_API_URL
             valueFrom:
               secretKeyRef:
-                name: fixed-aidc-postgres-mcp-secrets
-                key: DATABASE_CONNECTION
+                name: next-public-api-url
+                key: NEXT_PUBLIC_API_URL
+          - name: NODE_ENV
+            valueFrom:
+              secretKeyRef:
+                name: node-env
+                key: NODE_ENV
+          - name: OPENAI_BASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: openai-base-url
+                key: OPENAI_BASE_URL
+          - name: OPENAI_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: openai-api-key
+                key: OPENAI_API_KEY
+          - name: PGHOST
+            valueFrom:
+              secretKeyRef:
+                name: pghost
+                key: PGHOST
+          - name: PGPORT
+            valueFrom:
+              secretKeyRef:
+                name: pgport
+                key: PGPORT
+          - name: PGUSER
+            valueFrom:
+              secretKeyRef:
+                name: pguser
+                key: PGUSER
+          - name: PGPASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: pgpassword
+                key: PGPASSWORD
+          - name: PGDATABASE
+            valueFrom:
+              secretKeyRef:
+                name: pgdatabase
+                key: PGDATABASE
+          - name: PGSSLMODE
+            valueFrom:
+              secretKeyRef:
+                name: pgsslmode
+                key: PGSSLMODE
+          - name: ALLOWED_SCHEMAS
+            valueFrom:
+              secretKeyRef:
+                name: allowed-schemas
+                key: ALLOWED_SCHEMAS
+          - name: LOCAL_NO_SANDBOX
+            valueFrom:
+              secretKeyRef:
+                name: local-no-sandbox
+                key: LOCAL_NO_SANDBOX
         ports:
           - containerPort: 3000
         resources:
