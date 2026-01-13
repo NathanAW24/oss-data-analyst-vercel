@@ -17,6 +17,9 @@ curl -N http://localhost:3000/api/chat \
     ]
 }'
 ```
+```bash
+curl -N http://localhost:3000/api/chat -H "Content-Type: application/json" -H "Accept: text/event-stream" -d '{"model":"openai/gpt-5","messages":[{"id":"msg-1","role":"user","parts":[{"type":"text","text":"What is the current capacity of data center XAP?"}]}]}'
+```
 
 
 Most important stream outputs are these.
