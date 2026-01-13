@@ -1,0 +1,20 @@
+name: Deploy to k8s using ECR
+
+on:
+  push:
+    branches:
+      # - temp/openai-provider-non-gateway
+
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    uses: AMD-IT/bes-github_ci-pipeline/.github/workflows/on-prem-k8s-acr-ci-template.yml@on-prem
+    with:
+      ACR_REPOSITORY: bes-app/bes-oss-data-analyst-vercel
+      DEPLOYMENT_FILE: k8s/deployment.yaml
+      SERVICE_FILE: k8s/service.yaml
+      
+    secrets:
+      ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+      JUMP_SERVER_SSH_KEY: ${{ secrets.JUMP_SERVER_SSH_KEY }}

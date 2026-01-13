@@ -82,6 +82,8 @@ Call FinalizeReport with:
 
 export type Phase = "planning" | "building" | "execution" | "reporting";
 
+const shouldLogStepIO = process.env.AGENT_LOG_STEP_IO === "1";
+
 export async function runAgent({
   messages,
   model = "anthropic/claude-opus-4.5",

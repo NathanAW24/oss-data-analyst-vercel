@@ -158,9 +158,18 @@ No code changes required—the sandbox approach means schema changes are picked 
 ## Troubleshooting
 
 **Database Not Found**
-```bash
-pnpm initDatabase
-```
+SQLite
+- Run `pnpm initDatabase` to create and seed the database
+- Check that `data/oss-data-analyst.db` exists
+
+PostgreSQL
+- Make sure environment variables are set properly (`PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`, `PGSSLMODE`) for the proper PostgreSQL database
+- Run `pnpm pg:setup` to create and seed the database
+- Check `pnpm tsx tests/trials/lib/postgresql.ts` to make sure the postgres database is accessible.
+
+**AI Gateway API Errors**
+- Verify your API key is valid in `.env.local`
+- Check API rate limits and credits
 
 **Build Errors**
 ```bash
