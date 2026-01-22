@@ -43,3 +43,20 @@ data: {"type":"finish"}
 
 data: [DONE]
 ```
+
+
+```bash
+curl -sS http://localhost:3000/api/chatnostream \
+-H "Content-Type: application/json" \
+-d '{
+    "messages": [
+    {
+        "id": "msg-1",
+        "role": "user",
+        "parts": [
+        { "type": "text", "text": "What is the current capacity of data center XAP?" }
+        ]
+    }
+    ]
+}'
+```
