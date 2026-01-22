@@ -3,6 +3,7 @@ import {
   stepCountIs,
   Experimental_Agent as Agent,
   convertToModelMessages,
+  generateText,
   streamText,
   tool,
 } from "ai";
@@ -115,6 +116,40 @@ export async function runAgent({
   });
 
   return result;
+}
+
+export async function runNonStreamingAgent({
+  messages,
+  model = "anthropic/claude-opus-4.5",
+}: {
+  messages: UIMessage[];
+  model?: string;
+}) {
+  const { sandbox, stop } = await createSemanticSandbox();
+
+  try {
+    const result = await generateText({
+      model: customOpenAI("gpt-5.1-codex-max"),
+      system: SYSTEM_PROMPT,
+      messages: convertToModelMessages(messages),
+      stopWhen: [
+        (ctx) =>
+          ctx.steps.some((step) =>
+            step.toolResults?.some((t) => t.toolName === "FinalizeReport")
+          ),
+        stepCountIs(100),
+      ],
+      tools: {
+        executeCommand: createExecuteCommandTool(sandbox),
+        ExecuteSQL,
+        FinalizeReport,
+      },
+    });
+
+    return result;
+  } finally {
+    await stop();
+  }
 }
 
 /**
