@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { executeSQL as executeSQLQuery } from "@/lib/sqlite";
+import { executeSQL as executeSQLQuery } from "../sqlite";
 
 /**
  * Execute SQL query against SQLite database

@@ -17,6 +17,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 
 // Custom OpenAI provider configuration driven by environment variables.
 const subscriptionKey = process.env.OPENAI_API_KEY;
+console.log("subscriptionKey ", subscriptionKey);
 const customOpenAI = createOpenAI({
   baseURL: process.env.OPENAI_BASE_URL,
   apiKey: "dummy", // still set apiKey field

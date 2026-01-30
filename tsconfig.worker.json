@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist/worker",
+    "rootDir": "src",
+    "noEmit": false,
+    "declaration": false,
+    "sourceMap": false,
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "isolatedModules": false
+  },
+  "include": ["src/worker/agent-worker.ts"]
+}

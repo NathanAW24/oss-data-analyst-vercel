@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { executeSQL as executeSQLQuery } from "@/lib/postgresql";
+import { executeSQL as executeSQLQuery } from "../postgresql";
 
 /**
  * Execute SQL query against PostgreSQL database

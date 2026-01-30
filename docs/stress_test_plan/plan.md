@@ -17,7 +17,7 @@ Introduce RabbitMQ to schedule `runAgent` as a long-running job while preserving
   - args: `x-single-active-consumer=true`
   - consume with `prefetch(1)`
 - exchange (events): `agent.events` (topic, durable)
-- queue (events per job): `agent.events.<jobId>` (exclusive or non-durable, no TTL)
+- queue (events per job): `agent.events.<jobId>` (non-durable, no TTL, not auto-deleted)
   - deleted explicitly on `done` or `error`
 - routing keys:
   - job publish: `agent.run`
@@ -68,6 +68,8 @@ Optional overrides (if desired):
 - `RABBITMQ_JOBS_EXCHANGE=agent.jobs`
 - `RABBITMQ_EVENTS_EXCHANGE=agent.events`
 - `RABBITMQ_JOBS_QUEUE=agent.jobs`
+- `RABBITMQ_JOBS_ROUTING_KEY=agent.run`
+- `RABBITMQ_EVENTS_ROUTING_KEY_PREFIX=job.`
 
 ## File Change List (planned)
 1) `src/lib/rabbitmq.ts`
@@ -83,13 +85,22 @@ Optional overrides (if desired):
 - New worker entrypoint that consumes `agent.jobs`, runs `runAgent`, and publishes stream events.
 
 4) `package.json`
-- Add a worker script, e.g. `worker: "node dist/worker/agent-worker.js"` or `worker: "tsx src/worker/agent-worker.ts"` for dev.
+- Add worker scripts and RabbitMQ dependency.
 
 5) `env.local.example`
 - Add `RABBITMQ_URL` and optional RabbitMQ config values.
 
-6) (Optional) `docs/rabbitmq.md`
-- Add a short section describing the job/event topology and how to run the worker.
+6) `tsconfig.worker.json`
+- Build config for compiling the worker into `dist/worker`.
+
+7) `Dockerfile`
+- Build + copy the compiled worker output into the runtime image.
+
+8) `src/lib/tools/execute-postgresql.ts`
+- Switch to a relative import so the worker build can resolve modules without path aliases.
+
+9) `src/lib/tools/execute-sqlite.ts`
+- Switch to a relative import so the worker build can resolve modules without path aliases.
 
 ## Notes
 - Events queues are deleted explicitly after `done`/`error` to avoid unbounded growth.
