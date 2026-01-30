@@ -104,7 +104,7 @@ export async function runAgent({
         ctx.steps.some((step) =>
           step.toolResults?.some((t) => t.toolName === "FinalizeReport")
         ),
-      stepCountIs(100),
+      stepCountIs(500),
     ],
     tools: {
       executeCommand: createExecuteCommandTool(sandbox),

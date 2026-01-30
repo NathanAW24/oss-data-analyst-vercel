@@ -1,6 +1,6 @@
-import amqp, { type Channel, type Connection } from "amqplib";
+import amqp, { type Channel, type ChannelModel } from "amqplib";
 
-type RabbitMQConfig = {
+export type RabbitMQConfig = {
   url: string;
   jobsExchange: string;
   jobsQueue: string;
@@ -9,7 +9,9 @@ type RabbitMQConfig = {
   eventsRoutingKeyPrefix: string;
 };
 
-const DEFAULTS = {
+type RabbitMQDefaults = Omit<RabbitMQConfig, "url">;
+
+const DEFAULTS: RabbitMQDefaults = {
   jobsExchange: "agent.jobs",
   jobsQueue: "agent.jobs",
   eventsExchange: "agent.events",
@@ -17,7 +19,7 @@ const DEFAULTS = {
   eventsRoutingKeyPrefix: "job.",
 };
 
-let connectionPromise: Promise<Connection> | null = null;
+let connectionPromise: Promise<ChannelModel> | null = null;
 
 export const getRabbitMQConfig = (): RabbitMQConfig => {
   const url = process.env.RABBITMQ_URL;
@@ -46,26 +48,29 @@ export const getEventsQueueName = (jobId: string) => `agent.events.${jobId}`;
 
 export const getRabbitMQConnection = async (
   config: RabbitMQConfig
-): Promise<Connection> => {
-  if (!connectionPromise) {
-    connectionPromise = amqp.connect(config.url);
-
-    connectionPromise
-      .then((connection) => {
-        connection.on("close", () => {
-          connectionPromise = null;
-        });
-
-        connection.on("error", () => {
-          connectionPromise = null;
-        });
-      })
-      .catch(() => {
-        connectionPromise = null;
-      });
+): Promise<ChannelModel> => {
+  if (connectionPromise) {
+    return connectionPromise;
   }
 
-  return connectionPromise;
+  const promise = amqp.connect(config.url);
+  connectionPromise = promise;
+
+  promise
+    .then((connection) => {
+      connection.on("close", () => {
+        connectionPromise = null;
+      });
+
+      connection.on("error", () => {
+        connectionPromise = null;
+      });
+    })
+    .catch(() => {
+      connectionPromise = null;
+    });
+
+  return promise;
 };
 
 export const createRabbitMQChannel = async (

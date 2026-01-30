@@ -1,22 +1,36 @@
 import dotenv from "dotenv";
 import type { ConsumeMessage } from "amqplib";
+import type { UIMessage } from "ai";
 const localEnvResult = dotenv.config({ path: ".env.local" });
 dotenv.config();
 
 const localEnvKeys = Object.keys(localEnvResult.parsed ?? {}).sort();
-console.log("Worker environment variables (.env.local):");
-if (localEnvKeys.length === 0) {
-  console.log("(none found)");
-} else {
-  localEnvKeys.forEach((key) => {
-    console.log(`${key}=${process.env[key] ?? ""}`);
-  });
-}
+// console.log("Worker environment variables (.env.local):");
+// if (localEnvKeys.length === 0) {
+//   console.log("(none found)");
+// } else {
+//   localEnvKeys.forEach((key) => {
+//     console.log(`${key}=${process.env[key] ?? ""}`);
+//   });
+// }
 
 type JobPayload = {
   jobId: string;
-  messages: unknown;
+  messages: UIMessage[];
   model?: string;
+};
+
+const isJobPayload = (value: unknown): value is JobPayload => {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+  return (
+    typeof record.jobId === "string" &&
+    Array.isArray(record.messages) &&
+    (record.model === undefined || typeof record.model === "string")
+  );
 };
 
 const startWorker = async () => {
@@ -82,22 +96,23 @@ const startWorker = async () => {
     let payload: JobPayload;
 
     try {
-      payload = JSON.parse(msg.content.toString("utf-8")) as JobPayload;
+      const parsed = JSON.parse(msg.content.toString("utf-8")) as unknown;
+      if (!isJobPayload(parsed)) {
+        console.error("Invalid job payload shape");
+        channel.ack(msg);
+        return;
+      }
+
+      payload = parsed;
     } catch (error) {
       console.error("Invalid job payload", error);
       channel.ack(msg);
       return;
     }
 
-    if (!payload.jobId) {
-      console.error("Job payload missing jobId");
-      channel.ack(msg);
-      return;
-    }
-
     try {
       const result = await runAgent({
-        messages: payload.messages as JobPayload["messages"],
+        messages: payload.messages,
         model: payload.model,
       });
 
