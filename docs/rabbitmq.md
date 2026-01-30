@@ -1,4 +1,5 @@
-RabbitMQ AMQP URL quick notes
+# RabbitMQ Docs
+## RabbitMQ AMQP URL quick notes
 
 AMQP URL format
 ```text
@@ -38,7 +39,11 @@ CLI test (direct AMQP) with `amqp-tools`
 
    amqp-declare-queue -u "$AMQP_URL" -q test-cli
    amqp-publish -u "$AMQP_URL" -r test-cli -b "hello"
-   amqp-consume -u "$AMQP_URL" -q test-cli -c 1
+   # NOTE: Some amqp-tools builds require a consume command.
+   # Use `cat` to print the message body:
+   amqp-consume -u "$AMQP_URL" -q test-cli -c 1 -- cat
+   # Alternatively, use amqp-get (no command needed):
+   # amqp-get -u "$AMQP_URL" -q test-cli
    ```
 
 If `amqp-consume` prints `hello`, the URL works.
@@ -51,3 +56,33 @@ Note: This uses the HTTP management plugin, not AMQP.
    ```bash
    rabbitmqadmin -u user -p pass -H host -P 15672 list vhosts
    ```
+
+## Basic Concept Quickstart
+
+Basic RabbitMQ concepts for long-running jobs
+- Broker: the RabbitMQ server that routes and stores messages.
+- Vhost: namespace that isolates queues/exchanges/users.
+- Connection/Channel: one TCP connection with lightweight channels.
+- Exchange: routes messages to queues (direct/topic/fanout/headers).
+- Queue: holds messages until consumers handle them.
+- Binding/Routing key: rules connecting exchanges to queues.
+- Producer/Consumer: sender and worker.
+- Ack/Nack: signal success/failure; enables retries.
+
+Work-queue patterns (long-running tasks)
+- Competing consumers: many workers consume from the same queue to scale.
+- Manual ack: only ack after the job finishes.
+- Prefetch (QoS): limit in-flight messages per worker (often 1).
+- Idempotency: handlers should be safe to retry.
+- Durability: durable queues + persistent messages; consider publisher confirms.
+
+Retries, delays, and failures
+- Dead-letter exchange (DLX): route failed/expired messages to a DLQ.
+- Retry with backoff: TTL + DLX "delay queues" per attempt.
+- Poison messages: after N retries, park in a quarantine queue.
+- Timeouts: avoid stuck jobs; consider consumer-side timeouts.
+
+Scheduling "run later"
+- External scheduler publishes messages at the right time (cron, etc.).
+- Delay pattern: TTL + DLX requeue after a delay.
+- Optional delayed-message plugin if enabled in your infra.
