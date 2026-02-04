@@ -13,6 +13,13 @@ import {
   getRabbitMQConfig,
 } from "@/lib/rabbitmq";
 
+const debug = (...args: unknown[]) => {
+  console.log("[chat]", ...args);
+};
+const debugError = (...args: unknown[]) => {
+  console.error("[chat]", ...args);
+};
+
 const UI_MESSAGE_STREAM_HEADERS = {
   "content-type": "text/event-stream",
   "cache-control": "no-cache",
@@ -38,6 +45,14 @@ export async function POST(req: NextRequest) {
     const eventsQueueName = getEventsQueueName(jobId);
     eventsQueueNameRef = eventsQueueName;
 
+    debug("job.start", {
+      jobId,
+      model,
+      jobsExchange: config.jobsExchange,
+      jobsQueue: config.jobsQueue,
+      eventsExchange: config.eventsExchange,
+    });
+
     await channel.assertQueue(eventsQueueName, {
       durable: false,
       autoDelete: false,
@@ -56,6 +71,8 @@ export async function POST(req: NextRequest) {
       { contentType: "application/json", persistent: true }
     );
 
+    debug("job.enqueued", { jobId, routingKey: config.jobsRoutingKey });
+
     const cleanup = async () => {
       if (!channel) {
         return;
@@ -70,6 +87,7 @@ export async function POST(req: NextRequest) {
       }
 
       await channel.close().catch(() => undefined);
+      debug("job.cleanup", { jobId });
     };
 
     const stream = new ReadableStream<Uint8Array>({
@@ -82,6 +100,7 @@ export async function POST(req: NextRequest) {
           const messageType = msg.properties.type;
 
           if (messageType === "done") {
+            debug("job.done", { jobId });
             controller.close();
             void cleanup();
             return;
@@ -89,6 +108,7 @@ export async function POST(req: NextRequest) {
 
           if (messageType === "error") {
             const errorText = msg.content.toString("utf-8");
+            debugError("job.error", { jobId, error: errorText });
             controller.error(new Error(errorText));
             void cleanup();
             return;
@@ -103,6 +123,7 @@ export async function POST(req: NextRequest) {
             consumerTag = tag;
           })
           .catch((err) => {
+            debugError("job.consume.error", { jobId, error: err });
             controller.error(err);
             void cleanup();
           });
@@ -121,6 +142,7 @@ export async function POST(req: NextRequest) {
     }
 
     const errorMessage = err instanceof Error ? err.message : String(err);
+    debugError("job.request.error", { error: errorMessage });
     return new Response(JSON.stringify({ ok: false, error: errorMessage }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

@@ -4,6 +4,13 @@ import type { UIMessage } from "ai";
 const localEnvResult = dotenv.config({ path: ".env.local" });
 dotenv.config();
 
+const debug = (...args: unknown[]) => {
+  console.log("[worker]", ...args);
+};
+const debugError = (...args: unknown[]) => {
+  console.error("[worker]", ...args);
+};
+
 const localEnvKeys = Object.keys(localEnvResult.parsed ?? {}).sort();
 // console.log("Worker environment variables (.env.local):");
 // if (localEnvKeys.length === 0) {
@@ -49,12 +56,19 @@ const startWorker = async () => {
   await assertRabbitMQTopology(channel, config);
   await channel.prefetch(1);
 
+  debug("worker.ready", {
+    jobsQueue: config.jobsQueue,
+    jobsExchange: config.jobsExchange,
+    eventsExchange: config.eventsExchange,
+  });
+
   const publishError = async (jobId: string, error: unknown) => {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const routingKey = getEventsRoutingKey(config, jobId);
     channel.publish(config.eventsExchange, routingKey, Buffer.from(errorMessage), {
       type: "error",
     });
+    debugError("job.error", { jobId, error: errorMessage });
   };
 
   const publishDone = async (jobId: string) => {
@@ -62,6 +76,7 @@ const startWorker = async () => {
     channel.publish(config.eventsExchange, routingKey, Buffer.alloc(0), {
       type: "done",
     });
+    debug("job.done", { jobId });
   };
 
   const publishStream = async (
@@ -111,6 +126,7 @@ const startWorker = async () => {
     }
 
     try {
+      debug("job.start", { jobId: payload.jobId });
       const result = await runAgent({
         messages: payload.messages,
         model: payload.model,
@@ -127,6 +143,7 @@ const startWorker = async () => {
       await publishError(payload.jobId, error);
     } finally {
       channel.ack(msg);
+      debug("job.ack", { jobId: payload.jobId });
     }
   };
 

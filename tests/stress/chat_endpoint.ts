@@ -9,13 +9,34 @@
  *   CHAT_ENDPOINT_URL=http://localhost:3000/api/chat
  *   NEXT_PUBLIC_API_URL=http://localhost:3000
  *   CHAT_MODEL=openai/gpt-5
+ *   CHAT_HEADERS_TIMEOUT_MS=600000
+ *   CHAT_BODY_TIMEOUT_MS=0
  */
 import { createWriteStream, promises as fs } from "node:fs";
 import path from "node:path";
+import { Agent } from "undici";
 
-const DEFAULT_COUNT = 15;
+const DEFAULT_COUNT = 10;
 const DEFAULT_MODEL = "openai/gpt-5";
 const DEFAULT_URL = "http://localhost:3000/api/chat";
+const DEFAULT_HEADERS_TIMEOUT_MS = 10 * 60 * 100000;
+const DEFAULT_BODY_TIMEOUT_MS = 0;
+const QUESTION_POOL = [
+  // "For hostname XAPL190221, fetch Redfish endpoints and PSU power telemetry for the last 2 hours, list ServiceNow alerts in the last 7 days, and propose a cabinet placement in SgpDC for two 2U servers at 500W each with rationale.",
+  // "Compare row-level capacity and power headroom for SgpDC and XAP, include any alert targets affecting placement, and recommend the best row and cabinet to place four new 2U servers at 600W each (single or split rows acceptable).",
+  // "For incident INC1265608, list ServiceNow alerts, correlate with Redfish telemetry for the affected host over the last 6 hours (fans and PSU), and advise whether relocating the workload to another cabinet in SgpDC is needed; include the target cabinet choice.",
+  // "Pull Redfish fan and power telemetry for SGPRHVH4-SDE004 over the last 4 hours, check for any ServiceNow alerts in that window, and provide a remediation plan plus whether additional capacity is available in its row for adding a 4U/700W server.",
+  "Summarize cabinet-level capacity and power headroom for data center XAP.",
+  "Summarize row-level capacity for SgpDC including power utilization.",
+  "Recommend placement for 3 servers (4U each, 450W each) in data center XAP",
+  "Find the best cabinet in SgpDC for two 2U servers at 500W each.",
+  "Find Redfish endpoints and identity for host XAPL190221.",
+  "Lookup the Action Redfish endpoints details for server XAPL190221, as i want to trigger API call to the Action Redfish URL",
+  "Pull PSU power redfish telemetry for XAP-TSESESX11 for the last 2 hours and include a summary.",
+  "Show fan redfish telemetry for SGPRHVH4-SDE004 from 2026-01-01T00:00Z to 2026-01-01T06:00Z.",
+  "Show ServiceNow alerts severity critical for device label XAPL190008 in the last week.",
+  "List ServiceNow alerts for incident number INC1265608.",
+];
 
 type RunResult = {
   ok: boolean;
@@ -25,6 +46,27 @@ type RunResult = {
   outputTail: string;
   logPath: string;
   error?: string;
+};
+
+const formatError = (error: unknown) => {
+  if (!(error instanceof Error)) {
+    return String(error);
+  }
+
+  const base = `${error.name}: ${error.message}`.trim();
+  const cause = (error as { cause?: unknown }).cause;
+
+  if (!cause) {
+    return base;
+  }
+
+  if (cause instanceof Error) {
+    const code = (cause as { code?: string }).code;
+    const codePart = code ? ` (${code})` : "";
+    return `${base} | cause=${cause.name}${codePart}: ${cause.message}`;
+  }
+
+  return `${base} | cause=${String(cause)}`;
 };
 
 const parseCount = (raw: string | undefined) => {
@@ -40,8 +82,32 @@ const parseCount = (raw: string | undefined) => {
   return parsed;
 };
 
+const parseTimeoutMs = (raw: string | undefined, fallback: number) => {
+  if (!raw) {
+    return fallback;
+  }
+
+  const parsed = Number.parseInt(raw, 10);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return fallback;
+  }
+
+  return parsed;
+};
+
 const normalizeBaseUrl = (baseUrl: string) =>
   baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+
+const dispatcher = new Agent({
+  headersTimeout: parseTimeoutMs(
+    process.env.CHAT_HEADERS_TIMEOUT_MS,
+    DEFAULT_HEADERS_TIMEOUT_MS
+  ),
+  bodyTimeout: parseTimeoutMs(
+    process.env.CHAT_BODY_TIMEOUT_MS,
+    DEFAULT_BODY_TIMEOUT_MS
+  ),
+});
 
 const resolveUrl = () => {
   if (process.env.CHAT_ENDPOINT_URL) {
@@ -54,6 +120,9 @@ const resolveUrl = () => {
 
   return DEFAULT_URL;
 };
+
+const pickQuestion = () =>
+  QUESTION_POOL[Math.floor(Math.random() * QUESTION_POOL.length)];
 
 const runRequest = async (
   url: string,
@@ -72,7 +141,7 @@ const runRequest = async (
         parts: [
           {
             type: "text",
-            text: `Stress test request ${index} at ${new Date().toISOString()}`,
+            text: pickQuestion(),
           },
         ],
       },
@@ -86,8 +155,9 @@ const runRequest = async (
         "Content-Type": "application/json",
         Accept: "text/event-stream",
       },
+      dispatcher,
       body: JSON.stringify(payload),
-    });
+    } as RequestInit);
 
     if (!response.ok) {
       logStream.write(`HTTP ${response.status}\n`);
@@ -166,7 +236,7 @@ const runRequest = async (
       logPath,
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorMessage = formatError(error);
     logStream.write(`Error: ${errorMessage}\n`);
     logStream.end();
     return {
