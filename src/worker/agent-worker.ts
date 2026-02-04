@@ -4,6 +4,8 @@ import type { UIMessage } from "ai";
 const localEnvResult = dotenv.config({ path: ".env.local" });
 dotenv.config();
 
+console.log(`RABBITMQ_URL ${process.env.RABBITMQ_URL}`);
+
 const debug = (...args: unknown[]) => {
   console.log("[worker]", ...args);
 };
