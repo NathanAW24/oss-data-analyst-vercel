@@ -77,6 +77,11 @@ spec:
               secretKeyRef:
                 name: bes-oss-data-analyst-vercel-secrets
                 key: LOCAL_NO_SANDBOX
+          - name: RABBITMQ_URL
+            valueFrom:
+              secretKeyRef:
+                name: bes-oss-data-analyst-vercel-secrets
+                key: RABBITMQ_URL
         ports:
           - containerPort: 3000
         resources:
