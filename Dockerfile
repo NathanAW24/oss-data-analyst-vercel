@@ -50,9 +50,9 @@ COPY . .
 ENV NEXT_PRIVATE_STANDALONE=true
 
 RUN \
-  if [ -f yarn.lock ]; then yarn run build; \
-  elif [ -f package-lock.json ]; then npm run build; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm run build; \
+  if [ -f yarn.lock ]; then yarn run build && yarn run worker:build; \
+  elif [ -f package-lock.json ]; then npm run build && npm run worker:build; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm run build && pnpm run worker:build; \
   else echo "Lockfile not found." && exit 1; \
   fi
 
@@ -79,6 +79,7 @@ COPY --from=builder /app/public ./public
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/dist/worker ./dist/worker
 
 # Ensuring no unnecessary permissions are given and add necessary permissions for it to run server.js properly.
 RUN chmod -R a-w+x . && chmod -R a+x .next node_modules
