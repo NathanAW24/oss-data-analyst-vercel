@@ -44,3 +44,5 @@ cacerts
 
 actions-runner
 env.gateway.sh
+
+tests/stress/chat_endpoint_results
