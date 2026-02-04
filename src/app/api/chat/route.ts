@@ -29,6 +29,8 @@ const UI_MESSAGE_STREAM_HEADERS = {
 };
 
 export async function POST(req: NextRequest) {
+  console.log(`RABBITMQ_URL ${process.env.RABBITMQ_URL}`);
+
   let channel: Channel | null = null;
   let eventsQueueNameRef: string | null = null;
   let consumerTag: string | null = null;
