@@ -40,7 +40,7 @@ const FinalizeReport = tool({
   execute: async (input) => input,
 });
 
-const SYSTEM_PROMPT = `You are an expert data analyst AI. You answer questions by exploring a semantic layer (YAML schema files), building SQL queries for SQLite, executing them, and presenting results.
+const SYSTEM_PROMPT = `You are an expert data analyst AI. You answer questions by exploring a semantic layer (YAML schema files), building SQL queries for PostgreSQL, executing them, and presenting results.
 
 ## Filesystem Structure
 - semantic/catalog.yml - Entity catalog with descriptions, example questions, and field lists
@@ -55,7 +55,7 @@ Use shell commands to find relevant entities and fields:
 - \`cat semantic/entities/<name>.yml\` - Get entity details (SQL expressions, joins)
 
 ### 2. SQL Building
-Construct a SQLite SELECT query using sql_table_name from entity definitions. Use table aliases (t0, t1), apply filters, GROUP BY for aggregations, ORDER BY, and LIMIT 1001.
+Construct a PostgreSQL SELECT query using sql_table_name from entity definitions. Use table aliases (t0, t1), apply filters, GROUP BY for aggregations, ORDER BY, and LIMIT 1001.
 
 ### 3. Execution
 Call ExecuteSQL with your query. If error:
