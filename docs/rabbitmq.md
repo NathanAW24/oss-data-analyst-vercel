@@ -28,7 +28,39 @@ Common vhost cases
   amqp://user:pass@host:5672/myapp
   ```
 
-CLI test (direct AMQP) with `amqp-tools`
+## Local Docker Setup
+
+1) Start RabbitMQ (with management UI) locally:
+   ```bash
+   docker run -d --rm --name rabbitmq \
+     -p 5672:5672 -p 15672:15672 \
+     -e RABBITMQ_DEFAULT_USER=user \
+     -e RABBITMQ_DEFAULT_PASS=pass \
+     -e RABBITMQ_DEFAULT_VHOST=oss-data-analyst \
+     rabbitmq:3-management
+   ```
+
+2) Use this AMQP URL locally:
+   ```text
+   amqp://user:pass@localhost:5672/oss-data-analyst
+   ```
+
+Management UI: `http://localhost:15672` (user `user`, pass `pass`).
+
+### Stop / Restart (fresh container)
+
+If you see `container name "/rabbitmq" is already in use`, stop and remove
+the previous container before starting a new one:
+
+```bash
+docker rm -f rabbitmq
+```
+
+Then run the `docker run ...` command above again.
+
+
+
+## CLI test (direct AMQP) with `amqp-tools`
 1) Install (Debian/Ubuntu):
    ```bash
    sudo apt-get install amqp-tools
