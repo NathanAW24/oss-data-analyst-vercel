@@ -7,6 +7,9 @@ export type RabbitMQConfig = {
   eventsExchange: string;
   jobsRoutingKey: string;
   eventsRoutingKeyPrefix: string;
+  cancelExchange: string;
+  cancelQueue: string;
+  cancelRoutingKey: string;
 };
 
 type RabbitMQDefaults = Omit<RabbitMQConfig, "url">;
@@ -17,6 +20,9 @@ const DEFAULTS: RabbitMQDefaults = {
   eventsExchange: "vercelagent.events",
   jobsRoutingKey: "vercelagent.run",
   eventsRoutingKeyPrefix: "vercelagent.job.",
+  cancelExchange: "vercelagent.cancel",
+  cancelQueue: "vercelagent.cancel",
+  cancelRoutingKey: "vercelagent.cancel",
 };
 
 let connectionPromise: Promise<ChannelModel> | null = null;
@@ -38,6 +44,11 @@ export const getRabbitMQConfig = (): RabbitMQConfig => {
     eventsRoutingKeyPrefix:
       process.env.RABBITMQ_EVENTS_ROUTING_KEY_PREFIX ||
       DEFAULTS.eventsRoutingKeyPrefix,
+    cancelExchange:
+      process.env.RABBITMQ_CANCEL_EXCHANGE || DEFAULTS.cancelExchange,
+    cancelQueue: process.env.RABBITMQ_CANCEL_QUEUE || DEFAULTS.cancelQueue,
+    cancelRoutingKey:
+      process.env.RABBITMQ_CANCEL_ROUTING_KEY || DEFAULTS.cancelRoutingKey,
   };
 };
 
@@ -92,6 +103,10 @@ export const assertRabbitMQTopology = async (
     durable: true,
   });
 
+  await channel.assertExchange(config.cancelExchange, "direct", {
+    durable: true,
+  });
+
   await channel.assertQueue(config.jobsQueue, {
     durable: true,
     arguments: {
@@ -99,9 +114,20 @@ export const assertRabbitMQTopology = async (
     },
   });
 
+  await channel.assertQueue(config.cancelQueue, {
+    durable: false,
+    autoDelete: false,
+  });
+
   await channel.bindQueue(
     config.jobsQueue,
     config.jobsExchange,
     config.jobsRoutingKey
+  );
+
+  await channel.bindQueue(
+    config.cancelQueue,
+    config.cancelExchange,
+    config.cancelRoutingKey
   );
 };
