@@ -12,11 +12,11 @@ export type RabbitMQConfig = {
 type RabbitMQDefaults = Omit<RabbitMQConfig, "url">;
 
 const DEFAULTS: RabbitMQDefaults = {
-  jobsExchange: "agent.jobs",
-  jobsQueue: "agent.jobs",
-  eventsExchange: "agent.events",
-  jobsRoutingKey: "agent.run",
-  eventsRoutingKeyPrefix: "job.",
+  jobsExchange: "vercelagent.jobs",
+  jobsQueue: "vercelagent.jobs",
+  eventsExchange: "vercelagent.events",
+  jobsRoutingKey: "vercelagent.run",
+  eventsRoutingKeyPrefix: "vercelagent.job.",
 };
 
 let connectionPromise: Promise<ChannelModel> | null = null;

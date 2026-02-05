@@ -65,11 +65,11 @@ Required:
 - `RABBITMQ_URL=amqp://user:pass@host:5672/oss-data-analyst`
 
 Optional overrides (if desired):
-- `RABBITMQ_JOBS_EXCHANGE=agent.jobs`
-- `RABBITMQ_EVENTS_EXCHANGE=agent.events`
-- `RABBITMQ_JOBS_QUEUE=agent.jobs`
-- `RABBITMQ_JOBS_ROUTING_KEY=agent.run`
-- `RABBITMQ_EVENTS_ROUTING_KEY_PREFIX=job.`
+- `RABBITMQ_JOBS_EXCHANGE=vercelagent.jobs`
+- `RABBITMQ_EVENTS_EXCHANGE=vercelagent.events`
+- `RABBITMQ_JOBS_QUEUE=vercelagent.jobs`
+- `RABBITMQ_JOBS_ROUTING_KEY=vercelagent.run`
+- `RABBITMQ_EVENTS_ROUTING_KEY_PREFIX=vercelagent.job.`
 
 ## File Change List (planned)
 1) `src/lib/rabbitmq.ts`
