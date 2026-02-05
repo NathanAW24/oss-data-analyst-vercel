@@ -63,7 +63,7 @@ const ChatBotDemo = () => {
   const [input, setInput] = useState("");
   const [model, setModel] = useState<string>(models[0].value);
   const [webSearch, setWebSearch] = useState(false);
-  const { messages, sendMessage, status, regenerate } = useChat();
+  const { messages, sendMessage, status, regenerate, stop } = useChat();
 
   const handleSubmit = (message: PromptInputMessage) => {
     const hasText = Boolean(message.text);
@@ -269,7 +269,18 @@ const ChatBotDemo = () => {
                 </PromptInputModelSelectContent>
               </PromptInputModelSelect>
             </PromptInputTools>
-            <PromptInputSubmit disabled={!input && !status} status={status} />
+            <div className="flex items-center gap-2">
+              {(status === "submitted" || status === "streaming") && (
+                <PromptInputButton
+                  size="sm"
+                  variant="outline"
+                  onClick={() => stop()}
+                >
+                  STOP
+                </PromptInputButton>
+              )}
+              <PromptInputSubmit disabled={!input && !status} status={status} />
+            </div>
           </PromptInputFooter>
         </PromptInput>
       </div>
