@@ -80,6 +80,8 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/dist/worker ./dist/worker
+# Include full node_modules so the worker can load its runtime deps (e.g., dotenv).
+COPY --from=deps /app/node_modules ./node_modules
 
 # Ensuring no unnecessary permissions are given and add necessary permissions for it to run server.js properly.
 RUN chmod -R a-w+x . && chmod -R a+x .next node_modules
