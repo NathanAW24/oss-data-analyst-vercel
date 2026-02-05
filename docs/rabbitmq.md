@@ -118,3 +118,70 @@ Scheduling "run later"
 - External scheduler publishes messages at the right time (cron, etc.).
 - Delay pattern: TTL + DLX requeue after a delay.
 - Optional delayed-message plugin if enabled in your infra.
+
+## Project-Specific Exchanges, Queues, and Routing Keys
+
+This project uses two exchanges and two queue patterns to separate **durable job scheduling**
+from **ephemeral streaming events**. The names here reflect the defaults in `src/lib/rabbitmq.ts`.
+
+Key objects
+- Exchange (jobs): `vercelagent.jobs` (direct, durable)
+- Queue (jobs): `vercelagent.jobs` (durable)
+- Exchange (events): `vercelagent.events` (topic, durable)
+- Queue (events per job): `agent.events.<jobId>` (non-durable, created per request)
+- Jobs routing key: `vercelagent.run`
+- Events routing key prefix: `vercelagent.job.`
+
+Important clarifications
+- The **jobs exchange and jobs queue share the same name** (`vercelagent.jobs`), but they are
+  **different objects**. Messages still flow exchange → queue via a binding.
+- The events queue is **not a default queue**. It is explicitly created per job and deleted
+  on `done`/`error`.
+- If 10 concurrent streams exist, there are 10 event queues: `agent.events.<jobId>` for each job.
+
+Why two exchange types
+- Jobs use a **direct** exchange because all jobs use one fixed routing key.
+- Events use a **topic** exchange because routing keys are per-job and topic binding lets each
+  job’s queue receive only its own events.
+
+### Visualization: API → Worker (Jobs)
+```text
+API
+  |
+  | publish job (routing key: vercelagent.run)
+  v
+[exchange: vercelagent.jobs]  (direct)
+  |
+  | binding: vercelagent.run
+  v
+[queue: vercelagent.jobs]  (durable)
+  |
+  v
+Worker consumes, processes, acks
+```
+
+### Visualization: Worker → API (Events)
+```text
+Worker
+  |
+  | publish event (routing key: vercelagent.job.<jobId>)
+  v
+[exchange: vercelagent.events]  (topic)
+  |
+  | binding: vercelagent.job.<jobId>
+  v
+[queue: agent.events.<jobId>]  (per-job, non-durable)
+  |
+  v
+API consumes, streams to client, deletes queue on done/error
+```
+
+### End-to-End Flow Summary
+1. API asserts exchanges + jobs queue and binds `vercelagent.run`.
+2. API creates a per-job events queue `agent.events.<jobId>` and binds it to
+   `vercelagent.events` with routing key `vercelagent.job.<jobId>`.
+3. API publishes the job to `vercelagent.jobs` with routing key `vercelagent.run`.
+4. Worker consumes from `vercelagent.jobs`, runs the job, and publishes `chunk`/`done`/`error`
+   events to `vercelagent.events` using routing key `vercelagent.job.<jobId>`.
+5. API consumes those events from the per-job queue and streams them to the client, then deletes
+   the events queue.
