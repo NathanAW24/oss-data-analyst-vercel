@@ -1,9 +1,9 @@
 # On Client Cancel / Disconnect (RabbitMQ + Next.js)
 
 ## Summary
-When the client closes the SSE connection, **the job is not canceled**.  
-The API stops streaming, deletes the per-job events queue, and closes its AMQP channel.  
-The job remains in RabbitMQ and the worker continues processing and acks it.
+When the client closes the SSE connection, **the API publishes a cancel message**.  
+The worker receives the cancel signal, aborts the in-flight job (if any), and acks it.  
+The API also stops streaming, deletes the per-job events queue, and closes its AMQP channel.
 
 ## Step-by-Step Behavior (Current Code)
 
@@ -21,23 +21,28 @@ The job remains in RabbitMQ and the worker continues processing and acks it.
 
 4. **Client closes the connection**
    - Next.js calls the stream `cancel()` handler.  
-   - That triggers cleanup: cancel consumer, delete events queue, close channel.  
-   - Code: `src/app/api/chat/route.ts:76-91` and `src/app/api/chat/route.ts:131-133`
+   - The API publishes a cancel message and runs cleanup (cancel consumer, delete events queue, close channel).  
+   - Code: `src/app/api/chat/route.ts:76-101` and `src/app/api/chat/route.ts:139-144`
 
-5. **RabbitMQ does not cancel the job**
-   - The job is stored in a durable queue (`agent.jobs`) and continues as normal.  
-   - Code: `src/lib/rabbitmq.ts:83-106`
+5. **Worker receives the cancel signal**
+   - The worker listens on a cancel queue and marks the job as canceled.  
+   - If the job is currently running, it aborts `runAgent` with an `AbortSignal`.  
+   - Code: `src/worker/agent-worker.ts:71-196`
 
-6. **Worker continues and acks the job**
-   - The worker runs `runAgent`, publishes chunks and a final `done`/`error`, then acks.  
-   - If the API already deleted the events queue, those events are dropped (no binding).  
-   - Code: `src/worker/agent-worker.ts:82-104` and `src/worker/agent-worker.ts:128-146`
+6. **Worker acks the job**
+   - The worker stops streaming, skips `done`, and acks the job.  
+   - Any later events are dropped because the API deleted the events queue.  
+   - Code: `src/worker/agent-worker.ts:150-186`
 
 ## Code Snippets (Key Points)
 
-**API cleanup on cancel**
+**API cancel publish + cleanup**
 ```ts
-// src/app/api/chat/route.ts:76-91, 131-133
+// src/app/api/chat/route.ts:76-101, 139-144
+const publishCancel = async (reason: string) => {
+  channel.publish(config.cancelExchange, config.cancelRoutingKey, ...);
+};
+
 const cleanup = async () => {
   if (consumerTag) {
     await channel.cancel(consumerTag).catch(() => undefined);
@@ -50,6 +55,7 @@ const cleanup = async () => {
 
 const stream = new ReadableStream({
   cancel() {
+    void publishCancel("client_disconnect");
     void cleanup();
   },
 });
@@ -66,23 +72,20 @@ channel.publish(
 );
 ```
 
-**Worker always acks**
+**Worker aborts and acks**
 ```ts
-// src/worker/agent-worker.ts:140-146
-await publishStream(payload.jobId, response.body);
+// src/worker/agent-worker.ts:164-186
+await publishStream(payload.jobId, response.body, abortController.signal);
+if (abortController.signal.aborted) return;
 await publishDone(payload.jobId);
 // ...
 channel.ack(msg);
 ```
 
 ## Practical Implications
-1. **Client disconnect does not stop the job.**  
-   Jobs are durable and will be processed and acked.
+1. **Client disconnect stops the job.**  
+   The worker aborts the in-flight run and acks the message.
 2. **Events are dropped after cancel.**  
    The per-job events queue is deleted, so the worker’s updates won’t be seen.
-3. **No cancellation signal exists today.**  
-   There is no message from the API to the worker to stop a job mid-run.
-
-## If You Need Cancellable Jobs (Optional Design Note)
-You would need a separate cancellation signal (e.g., a `cancel` queue or a DB flag)
-and the worker would need to check it during execution and exit early.
+3. **Cancellation is in-memory only.**  
+   If the worker restarts, a previously canceled job may run if it was requeued.

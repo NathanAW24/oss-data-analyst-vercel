@@ -34,6 +34,8 @@ export async function POST(req: NextRequest) {
   let channel: Channel | null = null;
   let eventsQueueNameRef: string | null = null;
   let consumerTag: string | null = null;
+  let cancelPublished = false;
+  let jobFinished = false;
 
   try {
     const { messages, model } = await req.json();
@@ -75,6 +77,27 @@ export async function POST(req: NextRequest) {
 
     debug("job.enqueued", { jobId, routingKey: config.jobsRoutingKey });
 
+    const publishCancel = async (reason: string) => {
+      if (!channel || cancelPublished || jobFinished) {
+        return;
+      }
+
+      cancelPublished = true;
+      const payload = JSON.stringify({
+        jobId,
+        reason,
+        requestedAt: new Date().toISOString(),
+      });
+
+      channel.publish(
+        config.cancelExchange,
+        config.cancelRoutingKey,
+        Buffer.from(payload),
+        { contentType: "application/json" }
+      );
+      debug("job.cancel.enqueued", { jobId, reason });
+    };
+
     const cleanup = async () => {
       if (!channel) {
         return;
@@ -103,6 +126,7 @@ export async function POST(req: NextRequest) {
 
           if (messageType === "done") {
             debug("job.done", { jobId });
+            jobFinished = true;
             controller.close();
             void cleanup();
             return;
@@ -111,6 +135,7 @@ export async function POST(req: NextRequest) {
           if (messageType === "error") {
             const errorText = msg.content.toString("utf-8");
             debugError("job.error", { jobId, error: errorText });
+            jobFinished = true;
             controller.error(new Error(errorText));
             void cleanup();
             return;
@@ -131,6 +156,7 @@ export async function POST(req: NextRequest) {
           });
       },
       cancel() {
+        void publishCancel("client_disconnect");
         void cleanup();
       },
     });

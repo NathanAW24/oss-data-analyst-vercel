@@ -89,16 +89,32 @@ const shouldLogStepIO = process.env.AGENT_LOG_STEP_IO === "1";
 export async function runAgent({
   messages,
   model = "anthropic/claude-opus-4.5",
+  abortSignal,
 }: {
   messages: UIMessage[];
   model?: string;
+  abortSignal?: AbortSignal;
 }) {
   const { sandbox, stop } = await createSemanticSandbox();
+  let stopped = false;
+  const stopOnce = async () => {
+    if (stopped) {
+      return;
+    }
+    stopped = true;
+    await stop();
+  };
 
   const result = streamText({
-    model: customOpenAI("gpt-5.1-codex-max"),
+    model: customOpenAI("gpt-5.2-codex"),
+    // model: customOpenAI.chat("lfm2.5-tk:1.2b"),
     system: SYSTEM_PROMPT,
     messages: convertToModelMessages(messages),
+    providerOptions: {
+      openai: {
+        reasoningSummary: "detailed"
+      }
+    },
     stopWhen: [
       (ctx) =>
         ctx.steps.some((step) =>
@@ -111,8 +127,12 @@ export async function runAgent({
       ExecuteSQL,
       FinalizeReport,
     },
+    abortSignal,
     onFinish: async () => {
-      await stop();
+      await stopOnce();
+    },
+    onAbort: async () => {
+      await stopOnce();
     },
   });
 
