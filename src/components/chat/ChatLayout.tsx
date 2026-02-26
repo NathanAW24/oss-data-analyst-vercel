@@ -247,7 +247,7 @@ const ChatBotDemo = () => {
             />
           </PromptInputBody>
           <PromptInputFooter>
-            <PromptInputTools>
+            {/* <PromptInputTools>
               <PromptInputModelSelect
                 onValueChange={(value) => {
                   setModel(value);
@@ -268,8 +268,8 @@ const ChatBotDemo = () => {
                   ))}
                 </PromptInputModelSelectContent>
               </PromptInputModelSelect>
-            </PromptInputTools>
-            <div className="flex items-center gap-2">
+            </PromptInputTools> */}
+            <div className="flex items-center gap-2 ml-auto">
               {(status === "submitted" || status === "streaming") && (
                 <PromptInputButton
                   size="sm"
